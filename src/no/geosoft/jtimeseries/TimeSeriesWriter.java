@@ -1,4 +1,4 @@
-package no.petroware.logio.json;
+package no.geosoft.jtimeseries;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -27,19 +27,19 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import no.petroware.logio.util.Formatter;
-import no.petroware.logio.util.Indentation;
-import no.petroware.logio.util.ISO8601DateParser;
-import no.petroware.logio.util.Util;
+import no.geosoft.jtimeseries.util.Formatter;
+import no.geosoft.jtimeseries.util.Indentation;
+import no.geosoft.jtimeseries.util.ISO8601DateParser;
+import no.geosoft.jtimeseries.util.Util;
 
 /**
- * Class for writing JSON Well Log Format logs to disk.
+ * Class for writing TimeSeries.JSON entries to disk.
  * <p>
  * Typical usage:
  * <blockquote>
  *   <pre>
- *   JsonWriter writer = new JsonWriter(new File("path/to/file.json"), true, 2);
- *   writer.write(jsonLog);
+ *   TimeSeriesWriter writer = new TimeSeriesWriter(new File("path/to/file.json"), true, 2);
+ *   writer.write(timeSeries);
  *   writer.close();
  *   </pre>
  * </blockquote>
@@ -49,7 +49,7 @@ import no.petroware.logio.util.Util;
  * instance written, like:
  * <blockquote>
  *   <pre>
- *   JsonWriter writer = new JsonWriter(new File("path/to/file.json"), true, 2);
+ *   TimeSeriesWriter writer = new TimeSeriesWriter(new File("path/to/file.json"), true, 2);
  *   writer.write(jsonLog);
  *   writer.append(jsonLog);
  *   writer.append(jsonLog);
@@ -62,18 +62,16 @@ import no.petroware.logio.util.Util;
  * a standard JSON writer in that it always writes curve data arrays horizontally,
  * with each curve vertically aligned.
  * <p>
- * If the JSON log header contains a valid <em>dataUri</em> property, the curve
- * data will be written in binary form to this location.
+ * If the time series header contains a valid <em>dataUri</em> property, the time
+ * series data will be written in binary form to this location.
  *
- * @see <a href="https://jsonwelllogformat.org">https://jsonwelllogformat.org</a>
- *
- * @author <a href="mailto:info@petroware.no">Petroware AS</a>
+ * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class JsonWriter
+public final class TimeSeriesWriter
   implements Closeable
 {
   /** The logger instance. */
-  private static final Logger logger_ = Logger.getLogger(JsonReader.class.getName());
+  private static final Logger logger_ = Logger.getLogger(TimeSeriesWriter.class.getName());
 
   /** Platform independent new-line string. */
   private static String NEWLINE = System.getProperty("line.separator");
@@ -109,7 +107,7 @@ public final class JsonWriter
   private boolean hasData_;
 
   /**
-   * Create a JSON Well Log Format writer for the specified stream.
+   * Create a time series writer for the specified stream.
    *
    * @param outputStream  Stream to write. Non-null.
    * @param isPretty      True to write in human readable pretty format, false
@@ -118,7 +116,7 @@ public final class JsonWriter
    *                      If isPretty is false, this setting has no effect.
    * @throws IllegalArgumentException  If outputStream is null or indentation is out of bounds.
    */
-  public JsonWriter(OutputStream outputStream, boolean isPretty, int indentation)
+  public TimeSeriesWriter(OutputStream outputStream, boolean isPretty, int indentation)
   {
     if (outputStream == null)
       throw new IllegalArgumentException("outputStream cannot be null");
@@ -135,7 +133,7 @@ public final class JsonWriter
   }
 
   /**
-   * Create a JSON Well Log Format writer for the specified disk file.
+   * Create a time series writer for the specified disk file.
    *
    * @param file         Disk file to write. Non-null.
    * @param isPretty     True to write in human readable pretty format, false
@@ -144,7 +142,7 @@ public final class JsonWriter
    *                     If isPretty is false, this setting has no effect.
    * @throws IllegalArgumentException  If file is null or indentation is out of bounds.
    */
-  public JsonWriter(File file, boolean isPretty, int indentation)
+  public TimeSeriesWriter(File file, boolean isPretty, int indentation)
   {
     if (file == null)
       throw new IllegalArgumentException("file cannot be null");
@@ -161,13 +159,13 @@ public final class JsonWriter
   }
 
   /**
-   * Create a JSON Well Log Format writer for the specified file.
+   * Create a time series writer for the specified file.
    * Writing is done in pretty print mode with an indentation of 2.
    *
    * @param file  Disk file to write. Non-null.
    * @throws IllegalArgumentException  If file is null.
    */
-  public JsonWriter(File file)
+  public TimeSeriesWriter(File file)
   {
     this(file, true, 2);
   }
@@ -191,16 +189,16 @@ public final class JsonWriter
    * @param formatter  Curve data formatter. Null if N/A for the specified curve.
    * @return           Width of widest element of the curve. [0,&gt;.
    */
-  private static int computeColumnWidth(JsonCurve curve, Formatter formatter)
+  private static int computeColumnWidth(TimeSeriesSignal signal, Formatter formatter)
   {
     assert curve != null :  "curve cannot be null";
 
     int columnWidth = 0;
-    Class<?> valueType = curve.getValueType();
+    Class<?> valueType = signal.getValueType();
 
-    for (int index = 0; index < curve.getNValues(); index++) {
-      for (int dimension = 0; dimension < curve.getNDimensions(); dimension++) {
-        Object value = curve.getValue(dimension, index);
+    for (int index = 0; index < signal.getNValues(); index++) {
+      for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
+        Object value = signal.getValue(dimension, index);
 
         String text;
 
@@ -395,25 +393,25 @@ public final class JsonWriter
   }
 
   /**
-   * Write the speicfied JSON Well Logg Format header object to the current writer.
+   * Write the specified time series header object to the current writer.
    * <p>
    * This method is equal the writeHeader method apart from its special handling
    * of the specific keys startIndex, endIndex and step so that these gets identical
    * formatting as the index curve of the log.
    *
-   * @param header       The JSON Well Log Format header object. Non-null.
+   * @param header       The time series header. Non-null.
    * @param indentation  The current indentation level. Non-null.
-   * @param log          The log of this header. Non-null.
+   * @param timeSeries   The time series of the header. Non-null.
    */
-  private void writeHeaderObject(JsonObject header, Indentation indentation, JsonLog log)
+  private void writeHeaderObject(JsonObject header, Indentation indentation, TimeSeries timeSeries)
     throws IOException
   {
     assert header != null : "header cannot be null";
     assert indentation != null : "indentation cannot be null";
     assert log != null : "log cannot be null";
 
-    JsonCurve indexCurve = log.getNCurves() > 0 ? log.getCurves().get(0) : null;
-    Formatter indexCurveFormatter = indexCurve != null ? log.createFormatter(indexCurve, true) : null;
+    TimeSeriesSignal timeSignal = timeSeries.getNSignals() > 0 ? timSeries.getSignals().get(0) : null;
+    Formatter timeFormatter = timeSignal != null ? timeSignal.createFormatter(timeSignal, true) : null;
 
     writer_.write('{');
 
@@ -460,13 +458,13 @@ public final class JsonWriter
   }
 
   /**
-   * Write the curve data of the specified log to the given file
+   * Write the curve data of the specified time series to the given file
    * in binary form.
    *
    * @param log   Log of data to write. Non-null.
    * @param file  File to write to. Non-null.
    */
-  private void writeDataAsBinary(JsonLog log, File file)
+  private void writeDataAsBinary(TimeSeries timeSeries, File file)
     throws IOException
   {
     FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -474,12 +472,12 @@ public final class JsonWriter
     DataOutputStream outputStream = new DataOutputStream(new BufferedOutputStream(fileOutputStream));
 
     try {
-      for (int index = 0; index < log.getNValues(); index++) {
-        for (JsonCurve curve : log.getCurves()) {
-          Class<?> valueType = curve.getValueType();
-          int size = curve.getSize();
-          for (int dimension = 0; dimension < curve.getNDimensions(); dimension++) {
-            Object value = curve.getValue(dimension, index);
+      for (int index = 0; index < timeSeries.getNValues(); index++) {
+        for (TimSeriesSignal signal : timeSeries.getSignals()) {
+          Class<?> valueType = signal.getValueType();
+          int size = signal.getSize();
+          for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
+            Object value = signal.getValue(dimension, index);
 
             //
             // Double
@@ -537,12 +535,12 @@ public final class JsonWriter
   }
 
   /**
-   * Write the curve data of the specified log.
+   * Write the signal data of the specified time series.
    *
-   * @param log   Log of data to write. Non-null.
+   * @param timeSeries    Time series of data to write. Non-null.
    * @throws IOException  If the write operation fails for some reason.
    */
-  private void writeDataAsText(JsonLog log)
+  private void writeDataAsText(TimeSeries timeSeries)
     throws IOException
   {
     assert log != null : "log cannot be null";

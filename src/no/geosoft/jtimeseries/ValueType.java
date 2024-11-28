@@ -1,13 +1,13 @@
-package no.petroware.logio.json;
+package no.geosoft.jtimeseries;
 
 import java.util.Date;
 
 /**
- * Represents the different data types defined in the JSON Well Log Format.
+ * Represents the different value types defined in TimeSeries.JSON format.
  *
- * @author <a href="mailto:info@petroware.no">Petroware AS</a>
+ * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-enum JsonValueType
+enum ValueType
 {
   /** Floating point decimal numbers. */
   FLOAT("float", Double.class),
@@ -31,12 +31,12 @@ enum JsonValueType
   private final Class<?> valueType_;
 
   /**
-   * Create a JSON value type as defined by the JSON Well Log Format.
+   * Create a value type as defined by the TimeSeries.JSON format.
    *
    * @param name       Value type name as it will appear on file. Non-null.
    * @param valueType  Equivalent Java class. Non-null.
    */
-  private JsonValueType(String name, Class<?> valueType)
+  private ValueType(String name, Class<?> valueType)
   {
     assert name != null : "name cannot be null";
     assert valueType != null : "valueType cannot be null";
@@ -71,11 +71,11 @@ enum JsonValueType
    * @param name  Name to get value type for. Non-null.
    * @return      Associated JSON value type. Null if not found.
    */
-  static JsonValueType get(String name)
+  static ValueType get(String name)
   {
     assert name != null : "name cannot be null";
 
-    for (JsonValueType valueType : JsonValueType.values())
+    for (ValueType valueType : ValueType.values())
       if (valueType.getName().equals(name))
         return valueType;
 
@@ -89,12 +89,12 @@ enum JsonValueType
    * @param clazz  Java class to get value type for. Non-null.
    * @return       Associated JSON value type. Null if not found.
    */
-  static JsonValueType get(Class<?> clazz)
+  static ValueType get(Class<?> clazz)
   {
     assert clazz != null : "clazz cannot be null";
 
     // Search for exact match
-    for (JsonValueType valueType : JsonValueType.values()) {
+    for (ValueType valueType : ValueType.values()) {
       if (valueType.getValueType() == clazz)
         return valueType;
     }

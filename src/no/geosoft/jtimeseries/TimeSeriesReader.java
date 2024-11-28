@@ -64,7 +64,7 @@ import no.geosoft.jtimeseries.util.ISO8601DateParser;
 public final class TimeSeriesReader
 {
   /** The logger instance. */
-  private static final Logger logger_ = Logger.getLogger(TimeSeries.class.getName());
+  private static final Logger logger_ = Logger.getLogger(TimeSeriesReader.class.getName());
 
   /** The file to read. Null if reading from stream or JSON array. */
   private final File file_;
@@ -688,10 +688,10 @@ public final class TimeSeriesReader
         //
         if (key.equals("data")) {
           // If we didn't read "curves" yet, create a temporary storage for data
-          if (log.getCurves().isEmpty())
+          if (timeSeries.getSignals().isEmpty())
             temporaryStorage_ = new TemporaryStorage();
 
-          readData(jsonParser, log,
+          readData(jsonParser, timeSeries,
                    shouldReadBulkData,
                    shouldCaptureStatistics,
                    dataListener);
@@ -703,16 +703,16 @@ public final class TimeSeriesReader
   }
 
   /**
-   * Read data for a set of JSON logs where the metadata has
-   * already been read. This will preserve the existing JsonLog
+   * Read data for a set of time series instances where the metadata has
+   * already been read. This will preserve the existing time series
    * structure in case JSON content is read in two operations:
    *
    * <pre>
    *   // Read meta data
-   *   List&lt;JsonLog&gt; logs = reader.read(false, ...);
+   *   List&lt;TimeSeries&gt; timeSeriesList = reader.read(false, ...);
    *
    *   // Read the curve data
-   *   reader.readData(logs);
+   *   reader.readData(timeSeriesList);
    * </pre>
    *
    * There is nothing to gain in performance with this approach
@@ -721,13 +721,13 @@ public final class TimeSeriesReader
    *
    * <pre>
    *   // Read metadata
-   *   List&lt;JsonLog&gt; logs = reader.read(false, ...);
+   *   List&lt;TimeSeries&gt; timeSeriesList = reader.read(false, ...);
    *
    *   // Read all the data
-   *   logs = reader.read(true, ...);
+   *   timeSeriesList = reader.read(true, ...);
    * </pre>
    *
-   * @param logs          The logs to populate. These must be the
+   * @param timeSerieslist        The logs to populate. These must be the
    *                      exact same list as retrieved by calling the
    *                      #read(false,...) on the same JsonReader instance.
    *                      Otherwise the behavior is unpredictable.
@@ -741,32 +741,32 @@ public final class TimeSeriesReader
    * @throws InterruptedException  If the client returns <tt>false</tt> from
    *                      the {@link JsonDataListener#dataRead} method.
    */
-  public void readData(List<JsonLog> logs, boolean shouldCaptureStatistics,
-                       JsonDataListener dataListener)
+  public void readData(List<JsonLog> timeSerieslist, boolean shouldCaptureStatistics,
+                       TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
-    if (logs == null)
-      throw new IllegalArgumentException("logs cannot be null");
+    if (timeSeriesList == null)
+      throw new IllegalArgumentException("timeSeriesList cannot be null");
 
     // Read everything into a new structure
-    List<JsonLog> newLogs = read(true, shouldCaptureStatistics, dataListener);
+    List<TimeSeries> newTimeSeriesList = read(true, shouldCaptureStatistics, dataListener);
 
     // This is just a simple brain damage check. The client has all possible
     // ways to get into trouble if calling this method with an arbitrary argument.
-    if (newLogs.size() != logs.size())
-      throw new IllegalArgumentException("The specified logs are incompatible with the original");
+    if (newTimeSerieslist.size() != timeSeriesList.size())
+      throw new IllegalArgumentException("The specified time series are incompatible with the original");
 
     // Move the log data from the new to the existing
-    for (int i = 0; i < logs.size(); i++) {
-      JsonLog existingLog = logs.get(i);
-      JsonLog newLog = newLogs.get(i);
+    for (int i = 0; i < timeSeriesList.size(); i++) {
+      TimeSeries existingTimeSeries = timeSeriesList.get(i);
+      TimeSeries newTimeSeries = newTimeSeries.get(i);
 
-      existingLog.setCurves(newLog.getCurves());
+      existingTimeSeries.setSignals(newTimeSeries.getSignals());
     }
   }
 
   /**
-   * Read all logs from the content of this reader.
+   * Read all time series from the content of this reader.
    *
    * @param shouldReadBulkData  True if bulk data should be read, false
    *                            if only metadata should be read.
@@ -778,20 +778,17 @@ public final class TimeSeriesReader
    * @throws InterruptedException  If the client returns <tt>false</tt> from
    *                            the {@link JsonDataListener#dataRead} method.
    */
-  public List<JsonLog> read(boolean shouldReadBulkData,
+  public List<TimeSeries> read(boolean shouldReadBulkData,
                             boolean shouldCaptureStatistics,
-                            JsonDataListener dataListener)
+                            TimeSeriesListener dataListener)
     throws IOException, InterruptedException
   {
-    List<JsonLog> logs = new ArrayList<>();
+    List<TimeSeries> timeSeriesList = new ArrayList<>();
 
     InputStream inputStream = null;
 
     try {
-      if (file_ != null)
-        inputStream = new FileInputStream(file_);
-      else if (inputStream_ != null)
-        inputStream = inputStream_;
+      inputStream = file_ != null ? new FileInputStream(file_) : inputStream_;
 
       JsonParser jsonParser = jsonArray_ != null ? Json.createParserFactory(null).createParser(jsonArray_) : Json.createParser(inputStream);
 
@@ -802,17 +799,17 @@ public final class TimeSeriesReader
           return logs;
 
         if (parseEvent == JsonParser.Event.START_OBJECT) {
-          JsonLog log = readLog(jsonParser,
-                                shouldReadBulkData,
-                                shouldCaptureStatistics,
-                                dataListener);
-          logs.add(log);
+          TimeSeries timeSeries = readTimeSeries(jsonParser,
+                                                 shouldReadBulkData,
+                                                 shouldCaptureStatistics,
+                                                 dataListener);
+          timeSeriesList.add(timeSeries);
         }
       }
 
       jsonParser.close();
 
-      return logs;
+      return timeSeriesList;
     }
     catch (IOException exception) {
       throw exception;
@@ -832,12 +829,12 @@ public final class TimeSeriesReader
   }
 
   /**
-   * Read all logs from the content of this reader.
+   * Read all time series from the content of this reader.
    *
-   * @return  The logs of the JSON stream. Never null.
+   * @return  The time series of the stream. Never null.
    * @throws IOException  If the read operation fails for some reason.
    */
-  public List<JsonLog> read()
+  public List<TimeSeries> read()
     throws IOException
   {
     try {
@@ -850,29 +847,28 @@ public final class TimeSeriesReader
   }
 
   /**
-   * Read all logs from the content of this reader and return
+   * Read all time series from the content of this reader and return
    * the first one. This is a convenience method if the client knows
    * that the source contains exactly one log.
    *
-   * @return  The first log of the JSON stream. Null if there is none.
+   * @return  The first time series of the stream. Null if there is none.
    * @throws IOException  If the read operation fails for some reason.
    */
-  public JsonLog readOne()
+  public TimeSeries readOne()
     throws IOException
   {
-    List<JsonLog> logs = read();
-    return !logs.isEmpty() ? logs.get(0) : null;
+    List<TimeSeries> timeSeriesList = read();
+    return !timeSeriesList.isEmpty() ? timeSeriesList.get(0) : null;
   }
-
 
   /**
    * JSON does not guarantee the order of properties within an object so we
-   * must be prepared for the case that "data" is stored before "curves" in
-   * the input stream. Since we need the "curves" entrry to make properly
+   * must be prepared for the case that "data" is stored before "signals" in
+   * the input stream. Since we need the "signals" entry to make properly
    * sense of the data, we store the data temporarily in this class and then
-   * move them to the curves after these has been created.
+   * move them to the signals after these has been created.
    *
-   * @author <a href="mailto:info@petroware.no">Petroware AS</a>
+   * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
    */
   private final class TemporaryStorage
   {
@@ -890,50 +886,50 @@ public final class TimeSeriesReader
     /**
      * Add the specified value to the given curve/dimension.
      *
-     * @param curveNo    Curve number to add to. [0,&gt;.
+     * @param signalNo   Signal number to add to. [0,&gt;.
      * @param dimension  Dimension to add to. [0,&gt;.
      * @param value      Value to add. May be null for absent.
      */
-    void add(int curveNo, int dimension, Object value)
+    void add(int signalNo, int dimension, Object value)
     {
-      if (curveNo >= data_.size())
+      if (signalNo >= data_.size())
         data_.add(new ArrayList<List<Object>>());
 
-      List<List<Object>> curveData = data_.get(curveNo);
+      List<List<Object>> signalData = data_.get(curveNo);
 
-      if (dimension >= curveData.size())
-        curveData.add(new ArrayList<Object>());
+      if (dimension >= signalData.size())
+        signalData.add(new ArrayList<Object>());
 
-      List<Object> values = curveData.get(dimension);
+      List<Object> values = signalData.get(dimension);
       values.add(value);
     }
 
     /**
-     * Move data from this temporary storage to the specified log.
+     * Move data from this temporary storage to the specified time series.
      *
-     * @param log                      Log to move data to. Non-null.
+     * @param timeSeries               Time series to move data to. Non-null.
      * @param shouldCaptureStatistics  True if statistics should be captured,
      *                                 false otherwise.
      */
-    void move(JsonLog log, boolean shouldCaptureStatistics)
+    void move(TimeSeries timeSeries, boolean shouldCaptureStatistics)
     {
-      assert log != null : "log cannot be null";
+      assert timeSeries != null : "timeSeries cannot be null";
 
-      List<JsonCurve> curves = log.getCurves();
+      List<TimeSeriesSignal> signals = timeSeries.getSignals();
 
       // TODO: Remove data from the store as we go so we don't
       // end up sitting on twice the memory necessary
 
-      for (int curveNo = 0; curveNo < data_.size(); curveNo++) {
-        List<List<Object>> curveData = data_.get(curveNo);
-        JsonCurve curve = curves.get(curveNo);
-        for (int dimension = 0; dimension < curveData.size(); dimension++) {
-          List<Object> values = curveData.get(dimension);
+      for (int signalNo = 0; signalNo < data_.size(); signalNo++) {
+        List<List<Object>> signalData = data_.get(signalNo);
+        TimeSeriesSignal signal = signals.get(signalNo);
+        for (int dimension = 0; dimension < signalData.size(); dimension++) {
+          List<Object> values = signalData.get(dimension);
           for (int index = 0; index < values.size(); index++) {
             Object value = values.get(index);
-            curve.addValue(dimension, value);
+            signal.addValue(dimension, value);
             if (shouldCaptureStatistics)
-              curve.getStatistics().push(Util.getAsDouble(value));
+              signal.getStatistics().push(Util.getAsDouble(value));
           }
         }
       }
@@ -949,10 +945,10 @@ public final class TimeSeriesReader
   {
     try {
       File file = new File("C:/Users/jacob/logdata/json/WLC_COMPOSITE_TINY.JSON");
-      JsonReader reader = new JsonReader(file);
-      List<JsonLog> logs = reader.read();
+      TimeSeriesReader reader = new TimeSeriesReader(file);
+      List<TimeSeries> timeSeries = reader.read();
 
-      System.out.println(JsonWriter.toString(logs.get(0)));
+      System.out.println(TimeSeriesWriter.toString(timeSeries.get(0)));
     }
     catch (Exception exception) {
       exception.printStackTrace();

@@ -29,10 +29,10 @@ public enum WellKnownProperty
   TIME_START("timeStart"),
 
   /** End time. */
-  TIME_END("endIndex"),
+  TIME_END("timeEnd"),
 
   /** Step if regular sampling. */
-  STEP("step"),
+  TIME_STEP("timeStep"),
 
   /** Pointer to data source in case this is kept separate. */
   DATA_URI("dataUri");

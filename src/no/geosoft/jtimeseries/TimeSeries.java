@@ -16,7 +16,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import no.geosoft.jtimeseries.util.Formatter;
-import no.geosoft.jtimeseries.util.Util;
+import no.geosoft.jtimeseries.util.JsonUtil;
 
 /**
  * Class representing the content of one TimeSeries.JSON entry.
@@ -82,8 +82,8 @@ public final class TimeSeries
       setProperty(key, timeSeries.getProperty(key));
 
     // Add a copy of the curves with or without curve values
-    for (Signal signal : timeSeries.getSignals())
-      addSignale(new Signal(signal, includeSignalValues));
+    for (Signal signal : timeSeries.signals_)
+      addSignal(new Signal(signal, includeSignalValues));
   }
 
   /**
@@ -286,7 +286,7 @@ public final class TimeSeries
    */
   public String getName()
   {
-    return getPropertyAsString(JsonWellLogProperty.NAME.getKey());
+    return getPropertyAsString(WellKnownProperty.NAME.getKey());
   }
 
   /**
@@ -296,7 +296,7 @@ public final class TimeSeries
    */
   public void setName(String name)
   {
-    setProperty(JsonWellLogProperty.NAME.getKey(), name);
+    setProperty(WellKnownProperty.NAME.getKey(), name);
   }
 
   /**
@@ -306,7 +306,7 @@ public final class TimeSeries
    */
   public String getDescription()
   {
-    return getPropertyAsString(JsonWellLogProperty.DESCRIPTION.getKey());
+    return getPropertyAsString(WellKnownProperty.DESCRIPTION.getKey());
   }
 
   /**
@@ -316,187 +316,7 @@ public final class TimeSeries
    */
   public void setDescription(String description)
   {
-    setProperty(JsonWellLogProperty.DESCRIPTION.getKey(), description);
-  }
-
-  /**
-   * Return well name of this log.
-   *
-   * @return  Well name of this log. Null if none provided.
-   */
-  public String getWell()
-  {
-    return getPropertyAsString(JsonWellLogProperty.WELL.getKey());
-  }
-
-  /**
-   * Set well name of this log.
-   *
-   * @param well  Well name to set. Null to unset.
-   */
-  public void setWell(String well)
-  {
-    setProperty(JsonWellLogProperty.WELL.getKey(), well);
-  }
-
-  /**
-   * Return wellbore name of this log.
-   *
-   * @return  Wellbore name of this log. Null if none provided.
-   */
-  public String getWellbore()
-  {
-    return getPropertyAsString(JsonWellLogProperty.WELLBORE.getKey());
-  }
-
-  /**
-   * Set wellbore name of this log.
-   *
-   * @param wellbore  Wellbore name to set. Null to unset.
-   */
-  public void setWellbore(String wellbore)
-  {
-    setProperty(JsonWellLogProperty.WELLBORE.getKey(), wellbore);
-  }
-
-  /**
-   * Return field name of this log.
-   *
-   * @return  Field name of this log. Null if none provided.
-   */
-  public String getField()
-  {
-    return getPropertyAsString(JsonWellLogProperty.FIELD.getKey());
-  }
-
-  /**
-   * Set field name of this log.
-   *
-   * @param field  Field name to set. Null to unset.
-   */
-  public void setField(String field)
-  {
-    setProperty(JsonWellLogProperty.FIELD.getKey(), field);
-  }
-
-  /**
-   * Return country of this log.
-   *
-   * @return  Country of this log. Null if none provided.
-   */
-  public String getCountry()
-  {
-    return getPropertyAsString(JsonWellLogProperty.COUNTRY.getKey());
-  }
-
-  /**
-   * Set country of this log.
-   *
-   * @param country  Country to set. Null to unset.
-   */
-  public void setCountry(String country)
-  {
-    setProperty(JsonWellLogProperty.COUNTRY.getKey(), country);
-  }
-
-  /**
-   * Return logging date of this log.
-   *
-   * @return  Logging date of this log. Null if none provided.
-   */
-  public Date getDate()
-  {
-    return getPropertyAsDate(JsonWellLogProperty.DATE.getKey());
-  }
-
-  /**
-   * Set logging date of this log.
-   *
-   * @param date  Logging date to set. Null to unset.
-   */
-  public void setDate(Date date)
-  {
-    setProperty(JsonWellLogProperty.DATE.getKey(), date);
-  }
-
-  /**
-   * Return operator name of this log.
-   *
-   * @return  Operator name of this log. Null if none provided.
-   */
-  public String getOperator()
-  {
-    return getPropertyAsString(JsonWellLogProperty.OPERATOR.getKey());
-  }
-
-  /**
-   * Set operator name of this log.
-   *
-   * @param operator  Operator name to set. Null to unset.
-   */
-  public void setOperator(String operator)
-  {
-    setProperty(JsonWellLogProperty.OPERATOR.getKey(), operator);
-  }
-
-  /**
-   * Return service company name of this log.
-   *
-   * @return  Service company name of this log. Null if none provided.
-   */
-  public String getServiceCompany()
-  {
-    return getPropertyAsString(JsonWellLogProperty.SERVICE_COMPANY.getKey());
-  }
-
-  /**
-   * Set service company name of this log.
-   *
-   * @param serviceCompany  Service company name of this log. Null to unset.
-   */
-  public void setServiceCompany(String serviceCompany)
-  {
-    setProperty(JsonWellLogProperty.SERVICE_COMPANY.getKey(), serviceCompany);
-  }
-
-  /**
-   * Return run number of this log.
-   *
-   * @return  Run number of this log. Null if none provided.
-   */
-  public String getRunNumber()
-  {
-    return getPropertyAsString(JsonWellLogProperty.RUN_NUMBER.getKey());
-  }
-
-  /**
-   * Set run number of this log.
-   *
-   * @param runNumber  Run number of this log. Null to unset.
-   */
-  public void setRunNumber(String runNumber)
-  {
-    setProperty(JsonWellLogProperty.RUN_NUMBER.getKey(), runNumber);
-  }
-
-  /**
-   * Return elevation of this log.
-   *
-   * @return  Elevation of this log. Null if none provided.
-   */
-  public String getElevation()
-  {
-    return getPropertyAsString(JsonWellLogProperty.ELEVATION.getKey());
-  }
-
-  /**
-   * Set elevation of this log.
-   *
-   * @param elevation  Elevation of this log. Null to unset.
-   */
-  public void setElevation(double elevation)
-  {
-    setProperty(JsonWellLogProperty.ELEVATION.getKey(), elevation);
+    setProperty(WellKnownProperty.DESCRIPTION.getKey(), description);
   }
 
   /**
@@ -506,7 +326,7 @@ public final class TimeSeries
    */
   public String getSource()
   {
-    return getPropertyAsString(JsonWellLogProperty.SOURCE.getKey());
+    return getPropertyAsString(WellKnownProperty.SOURCE.getKey());
   }
 
   /**
@@ -516,7 +336,7 @@ public final class TimeSeries
    */
   public void setSource(String source)
   {
-    setProperty(JsonWellLogProperty.SOURCE.getKey(), source);
+    setProperty(WellKnownProperty.SOURCE.getKey(), source);
   }
 
   /**
@@ -526,7 +346,7 @@ public final class TimeSeries
    */
   public String getDataUri()
   {
-    return getPropertyAsString(JsonWellLogProperty.DATA_URI.getKey());
+    return getPropertyAsString(WellKnownProperty.DATA_URI.getKey());
   }
 
   /**
@@ -536,7 +356,7 @@ public final class TimeSeries
    */
   public void setDataUri(String dataUri)
   {
-    setProperty(JsonWellLogProperty.DATA_URI.getKey(), dataUri);
+    setProperty(WellKnownProperty.DATA_URI.getKey(), dataUri);
   }
 
   /**
@@ -548,7 +368,7 @@ public final class TimeSeries
    */
   public Class<?> getIndexValueType()
   {
-    return curves_.isEmpty() ? Double.class : curves_.get(0).getValueType();
+    return signals_.isEmpty() ? Date.class : signals_.get(0).getValueType();
   }
 
   /**
@@ -563,8 +383,8 @@ public final class TimeSeries
   public Object getStartIndex()
   {
     return getIndexValueType() == Date.class ?
-      getPropertyAsDate(JsonWellLogProperty.START_INDEX.getKey()) :
-      getPropertyAsDouble(JsonWellLogProperty.START_INDEX.getKey());
+      getPropertyAsDate(WellKnownProperty.TIME_START.getKey()) :
+      getPropertyAsDouble(WellKnownProperty.TIME_START.getKey());
   }
 
   /**
@@ -574,9 +394,9 @@ public final class TimeSeries
    */
   public Object getActualStartIndex()
   {
-    JsonCurve indexCurve = !curves_.isEmpty() ? curves_.get(0) : null;
-    int nValues = indexCurve != null ? indexCurve.getNValues() : 0;
-    return nValues > 0 ? indexCurve.getValue(0) : null;
+    Signal timeSignal = !signals_.isEmpty() ? signals_.get(0) : null;
+    int nValues = timeSignal != null ? timeSignal.getNValues() : 0;
+    return nValues > 0 ? timeSignal.getValue(0, 0) : null;
   }
 
   /**
@@ -589,9 +409,9 @@ public final class TimeSeries
   public void setStartIndex(Object startIndex)
   {
     if (startIndex instanceof Date)
-      setProperty(JsonWellLogProperty.START_INDEX.getKey(), startIndex);
+      setProperty(WellKnownProperty.TIME_START.getKey(), startIndex);
     else
-      setProperty(JsonWellLogProperty.START_INDEX.getKey(), Util.getAsDouble(startIndex));
+      setProperty(WellKnownProperty.TIME_START.getKey(), Util.getAsDouble(startIndex));
   }
 
   /**
@@ -606,8 +426,8 @@ public final class TimeSeries
   public Object getEndIndex()
   {
     return getIndexValueType() == Date.class ?
-      getPropertyAsDate(JsonWellLogProperty.END_INDEX.getKey()) :
-      getPropertyAsDouble(JsonWellLogProperty.END_INDEX.getKey());
+      getPropertyAsDate(WellKnownProperty.TIME_END.getKey()) :
+      getPropertyAsDouble(WellKnownProperty.TIME_END.getKey());
   }
 
   /**
@@ -617,9 +437,9 @@ public final class TimeSeries
    */
   public Object getActualEndIndex()
   {
-    JsonCurve indexCurve = !curves_.isEmpty() ? curves_.get(0) : null;
-    int nValues = indexCurve != null ? indexCurve.getNValues() : 0;
-    return nValues > 0 ? indexCurve.getValue(nValues - 1) : null;
+    Signal timeSignal = !signals_.isEmpty() ? signals_.get(0) : null;
+    int nValues = timeSignal != null ? timeSignal.getNValues() : 0;
+    return nValues > 0 ? timeSignal.getValue(nValues - 1, 0) : null;
   }
 
   /**
@@ -632,9 +452,9 @@ public final class TimeSeries
   public void setEndIndex(Object endIndex)
   {
     if (endIndex instanceof Date)
-      setProperty(JsonWellLogProperty.END_INDEX.getKey(), endIndex);
+      setProperty(WellKnownProperty.TIME_END.getKey(), endIndex);
     else
-      setProperty(JsonWellLogProperty.END_INDEX.getKey(), Util.getAsDouble(endIndex));
+      setProperty(WellKnownProperty.TIME_END.getKey(), Util.getAsDouble(endIndex));
   }
 
   /**
@@ -648,7 +468,7 @@ public final class TimeSeries
    */
   public Double getStep()
   {
-    return getPropertyAsDouble(JsonWellLogProperty.STEP.getKey());
+    return getPropertyAsDouble(WellKnownProperty.TIME_STEP.getKey());
   }
 
   /**
@@ -659,7 +479,7 @@ public final class TimeSeries
    */
   public Double getActualStep()
   {
-    return JsonUtil.computeStep(this);
+    return Util.computeStep(this);
   }
 
   /**
@@ -671,7 +491,7 @@ public final class TimeSeries
    */
   public void setStep(Double step)
   {
-    setProperty(JsonWellLogProperty.STEP.getKey(), step);
+    setProperty(WellKnownProperty.TIME_STEP.getKey(), step);
   }
 
   /**
@@ -681,13 +501,59 @@ public final class TimeSeries
    * @param curve  Curve to add. Non-null.
    * @throws IllegalArgumentException  If curve is null.
    */
-  public void addCurve(JsonCurve curve)
+  void addSignal(Signal signal)
   {
-    if (curve == null)
-      throw new IllegalArgumentException("curve cannot be null");
+    if (signal == null)
+      throw new IllegalArgumentException("signal cannot be null");
 
-    curves_.add(curve);
+    signals_.add(signal);
   }
+
+  public String getSignalName(int signalNo)
+  {
+    return signals_.get(signalNo).getName();
+  }
+
+  public String getDescription(int signalNo)
+  {
+    return signals_.get(signalNo).getDescription();
+  }
+
+  public String getQuantity(int signalNo)
+  {
+    return signals_.get(signalNo).getQuantity();
+  }
+
+  public String getUnit(int signalNo)
+  {
+    return signals_.get(signalNo).getUnit();
+  }
+
+  public Class<?> getValueType(int signalNo)
+  {
+    return signals_.get(signalNo).getValueType();
+  }
+
+  public int getNDimensions(int signalNo)
+  {
+    return signals_.get(signalNo).getNDimensions();
+  }
+
+  public Object getValue(int signalNo, int index, int dimension)
+  {
+    return signals_.get(signalNo).getValue(dimension, index);
+  }
+
+  public Object getValue(int signalNo, int index)
+  {
+    return signals_.get(signalNo).getValue(0, index);
+  }
+
+  public Object[] getRange(int signalNo)
+  {
+    return signals_.get(signalNo).getRange();
+  }
+
 
   /**
    * Return the curves of this log. The first curve
@@ -695,10 +561,12 @@ public final class TimeSeries
    *
    * @return  The curves of this log. Never null.
    */
+  /*
   public List<JsonCurve> getCurves()
   {
     return Collections.unmodifiableList(curves_);
   }
+  */
 
   /**
    * Return the specified curve from this log.
@@ -707,6 +575,7 @@ public final class TimeSeries
    * @return         The requested curve. Never null.
    * @throws IllegalArgumentException  If curveNo is out of bound.
    */
+  /*
   public JsonCurve getCurve(int curveNo)
   {
     if (curveNo < 0 || curveNo >= curves_.size())
@@ -714,6 +583,7 @@ public final class TimeSeries
 
     return curves_.get(curveNo);
   }
+  */
 
   /**
    * Return curve of the specified name from this log.
@@ -725,6 +595,7 @@ public final class TimeSeries
    * @return           The requested curve, or null if not found.
    * @throws IllegalArgumentException  If curveName is null.
    */
+  /*
   public JsonCurve findCurve(String curveName)
   {
     if (curveName == null)
@@ -737,6 +608,21 @@ public final class TimeSeries
     // Not found
     return null;
   }
+  */
+
+  public int findSignal(String signalName)
+  {
+    if (signalName == null)
+      throw new IllegalArgumentException("signalName cannot be null");
+
+    for (int signalNo = 0; signalNo < getNSignals(); signalNo++) {
+      if (getSignalName(signalNo).equals(signalName))
+        return signalNo;
+    }
+
+    // Not found
+    return -1;
+  }
 
   /**
    * Return curve number of the curve with the specified name.
@@ -748,6 +634,7 @@ public final class TimeSeries
    * @return           The requested curve number, or -1 if not found.
    * @throws IllegalArgumentException  If curveName is null.
    */
+  /*
   public int findCurveNo(String curveName)
   {
     if (curveName == null)
@@ -762,24 +649,26 @@ public final class TimeSeries
     // Not found
     return -1;
   }
+  */
 
   /**
-   * Replace the present set of curves.
+   * Replace the present set of signals.
    * <p>
-   * This method is called by the reader to populate a JsonLog instance
+   * This method is called by the reader to populate a TimeSeries instance
    * that initially was read without bulk data.
    *
-   * @param curves  Curves to set. Non-null.
+   * @param signals  Signals to set. Non-null.
    */
-  void setCurves(List<JsonCurve> curves)
+  void setSignals(List<Signal> signals)
   {
-    assert curves != null : "curves cannot be null";
+    assert signals != null : "signals cannot be null";
 
-    // TODO: Not thread safe. Need an atomic replacement for these two
-    curves_.clear();
-    curves_.addAll(curves);
+    synchronized (signals_) {
+      signals_.clear();
+      signals_.addAll(signals);
+    }
 
-    hasCurveData_ = true;
+    hasSignalData_ = true;
   }
 
   /**
@@ -787,9 +676,9 @@ public final class TimeSeries
    *
    * @return  Number of curves in this log. [0,&gt;.
    */
-  public int getNCurves()
+  public int getNSignals()
   {
-    return curves_.size();
+    return signals_.size();
   }
 
   /**
@@ -799,7 +688,7 @@ public final class TimeSeries
    */
   public int getNValues()
   {
-    return curves_.isEmpty() ? 0 : curves_.get(0).getNValues();
+    return signals_.isEmpty() ? 0 : signals_.get(0).getNValues();
   }
 
   /**
@@ -808,44 +697,46 @@ public final class TimeSeries
    * @return  The index curve of this log, or null if the
    *          log doesn't contain any curves.
    */
+  /*
   public JsonCurve getIndexCurve()
   {
     return getNCurves() > 0 ? getCurves().get(0) : null;
   }
+  */
 
   /**
    * Clear curve data from all curves of this log.
    */
-  public void clearCurves()
+  public void clearSignals()
   {
-    for (JsonCurve curve : curves_)
-      curve.clear();
+    for (Signal signal : signals_)
+      signal.clear();
   }
 
   /**
    * Set curve capacity to actual size to save memory.
    * The assumption is that the curves will not grow any further.
    */
-  void trimCurves()
+  void trimSignals()
   {
-    for (JsonCurve curve : curves_)
-      curve.trim();
+    for (Signal signal : signals_)
+      signal.trim();
   }
 
   /**
    * Return number of significant digits to use to properly represent
-   * the values of the specified curve.
+   * the values of the specified signal.
    *
    * @param curve         Curve to consider. Non-null.
    * @param isIndexCurve  True if curve is an index curve, false otherwise.
    * @return              The number of significant digits to use for the
    *                      specified curve. [0,&gt;.
    */
-  private int getNSignificantDigits(JsonCurve curve, boolean isIndexCurve)
+  private int getNSignificantDigits(Signal signal, boolean isTimeSignal)
   {
-    assert curve != null : "curve cannot be null";
+    assert signal != null : "curve cannot be null";
 
-    Class<?> valueType = curve.getValueType();
+    Class<?> valueType = signal.getValueType();
 
     // Limit to platform capabilities (see Util.getNSignificantDigits)
     int maxSignificantDigits = 10;
@@ -853,22 +744,23 @@ public final class TimeSeries
     if (valueType != Double.class && valueType != Float.class)
       return 0;
 
-    if (curve.getNValues() == 0)
+    if (signal.getNValues() == 0)
       return 0;
 
-    if (!isIndexCurve)
+    if (!isTimeSignal)
       return maxSignificantDigits;
 
     //
-    // Special treatment for the index curve so we don't accidently
-    // lose accuracy; making a regular log set irregular.
+    // TODO!
+    // Special treatment for the time signal so we don't accidently
+    // lose accuracy; making a regular time series irregular.
     //
 
-    Object[] range = curve.getRange();
+    Object[] range = signal.getRange();
     if (range[0] == null || range[1] == null)
       return maxSignificantDigits;
 
-    Double step = JsonUtil.computeStep(this);
+    Double step = Util.computeStep(this);
     if (step == null || step == 0.0)
       return maxSignificantDigits;
 
@@ -881,31 +773,31 @@ public final class TimeSeries
   }
 
   /**
-   * Create a formatter for the data of the specified curve.
+   * Create a formatter for the data of the specified signal.
    *
    * @param curve         Curve to create formatter for. Non-null.
    * @param isIndexCurve  True if curve is the index curve, false otherwise.
    * @return  A formatter that can be used to write the curve data.
    *                      Null if the log data is not of numeric type.
    */
-  Formatter createFormatter(JsonCurve curve, boolean isIndexCurve)
+  Formatter createFormatter(Signal signal, boolean isIndexCurve)
   {
-    assert curve != null : "curve cannot be null";
+    assert signal != null : "signal cannot be null";
 
-    Class<?> valueType = curve.getValueType();
+    Class<?> valueType = signal.getValueType();
     if (valueType != Double.class && valueType != Float.class)
       return null;
 
-    int nDimensions = curve.getNDimensions();
-    int nValues = curve.getNValues();
+    int nDimensions = signal.getNDimensions();
+    int nValues = signal.getNValues();
 
     double[] values = new double[nValues * nDimensions];
 
     for (int index = 0; index < nValues; index++)
       for (int dimension = 0; dimension < nDimensions; dimension++)
-        values[dimension * nValues + index] = Util.getAsDouble(curve.getValue(dimension, index));
+        values[dimension * nValues + index] = Util.getAsDouble(signal.getValue(index, dimension));
 
-    int nSignificantDigits = getNSignificantDigits(curve, isIndexCurve);
+    int nSignificantDigits = getNSignificantDigits(signal, isIndexCurve);
 
     return new Formatter(values, nSignificantDigits, null, null);
   }
@@ -915,14 +807,14 @@ public final class TimeSeries
   public String toString()
   {
     StringBuilder s = new StringBuilder();
-    s.append("-- JSON log\n");
+    s.append("-- Signal\n");
 
     s.append("Header:\n");
     for (String property : getProperties())
       s.append(property + ": " + getProperty(property));
 
-    for (JsonCurve curve : curves_)
-      s.append(curve + "\n");
+    for (Signal signal : signals_)
+      s.append(signal + "\n");
 
     return s.toString();
   }

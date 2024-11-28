@@ -1,11 +1,9 @@
-package no.geosoft.jtimseries;
+package no.geosoft.jtimeseries;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import no.petroware.logio.common.Statistics;
-import no.petroware.logio.util.DataArray;
-import no.petroware.logio.util.Util;
+import no.geosoft.jtimeseries.util.DataArray;
 
 /**
  * Model a time series signal as it is defined by the TimeSeries.JSON format.
@@ -15,7 +13,7 @@ import no.petroware.logio.util.Util;
  *
  * @author <a href="mailto:info@petroware.no">Petroware AS</a>
  */
-public final class Signal
+final class Signal
 {
   /** Name of this signal. Never null. */
   private final String name_;
@@ -282,24 +280,11 @@ public final class Signal
    * @param index      Position index. [0,nValues&gt;.
    * @return           The requested value. Null if absent.
    */
-  public Object getValue(int dimension, int index)
+  public Object getValue(int index, int dimension)
   {
     // Skip argument checking for performance reasons.
 
     return values_[dimension].get(index);
-  }
-
-  /**
-   * Return a specific value from this signal. If this is a multi-dimensional signal,
-   * the value is retrieved from the first dimension.
-   *
-   * @param index  Position index. [0,nValues&gt;.
-   * @return       The requested value. Null if absent.
-   * @throws IllegalArgumentException  If index is out of bounds.
-   */
-  public Object getValue(int index)
-  {
-    return getValue(0, index);
   }
 
   /**

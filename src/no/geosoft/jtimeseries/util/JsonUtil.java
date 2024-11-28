@@ -1,4 +1,4 @@
-package no.petroware.logio.json;
+package no.geosoft.jtimeseries.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -15,15 +15,12 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 
-import no.petroware.logio.util.ISO8601DateParser;
-import no.petroware.logio.util.Util;
-
 /**
  * A collection of utilities for the Log I/O JSON module.
  *
  * @author <a href="mailto:info@petroware.no">Petroware AS</a>
  */
-final class JsonUtil
+public final class JsonUtil
 {
   /**
    * Private constructor to prevent client instantiation.
@@ -414,87 +411,5 @@ final class JsonUtil
 
     assert false : "Invalid state";
     return null;
-  }
-
-  /**
-   * Find actual step value of the specified JSON log, being the distance between
-   * values in the index curve. Three values are returned: the <em>minimum step</em>,
-   * the <em>maximum step</em> and the <em>average step</em>. It is left to the client
-   * to decide if these numbers represents a <em>regular</em> or an <em>irregular</em>
-   * log set.
-   *
-   * @param log  Log to get step from. Non-null.
-   * @return     The (minimum, maximum and average) step value of the log.
-   */
-  private static double[] findStep(JsonLog log)
-  {
-    assert log != null : "log cannot be null";
-
-    List<JsonCurve> curves = log.getCurves();
-
-    JsonCurve indexCurve = !curves.isEmpty() ? curves.get(0) : null;
-    int nValues = indexCurve != null ? indexCurve.getNValues() : 0;
-
-    if (nValues < 2)
-      return new double[] {0.0, 0.0, 0.0};
-
-    double minStep = +Double.MAX_VALUE;
-    double maxStep = -Double.MAX_VALUE;
-    double averageStep = 0.0;
-
-    int nSteps = 0;
-    double indexValue0 = Util.getAsDouble(indexCurve.getValue(0));
-    for (int index = 1; index < nValues; index++) {
-      double indexValue1 = Util.getAsDouble(indexCurve.getValue(index));
-      double step = indexValue1 - indexValue0;
-
-      nSteps++;
-
-      if (step < minStep)
-        minStep = step;
-
-      if (step > maxStep)
-        maxStep = step;
-
-      averageStep += (step - averageStep) / nSteps;
-
-      indexValue0 = indexValue1;
-    }
-
-    return new double[] {minStep, maxStep, averageStep};
-  }
-
-  /**
-   * Based on the index curve, compute the step value of the specified log
-   * as it will be reported in the <em>step</em> metadata.
-   * <p>
-   * The method uses the {@link JsonUtil#findStep} method to compute min, max and
-   * average step, and then compare the largest deviation from the average
-   * (min or max) to the average itself.
-   * If this is within some limit (0.5% currently) the step is considered
-   * regular.
-   *
-   * @param log  Log to compute step of. Non-null.
-   * @return     The log step value. null if irregular.
-   */
-  static Double computeStep(JsonLog log)
-  {
-    assert log != null : "log cannot be null";
-
-    double[] step = findStep(log);
-
-    double minStep = step[0];
-    double maxStep = step[1];
-    double averageStep = step[2];
-
-    // Find largest deviation from average of the two
-    double d = Math.max(Math.abs(minStep - averageStep), Math.abs(maxStep - averageStep));
-
-    // Figure out if this is close enough to regard as equal
-    // NOTE: If this number causes apparently regular log sets to appear irregular
-    // we might consider adjusting it further, probably as high as 0.01 would be OK.
-    boolean isEqual = d <= Math.abs(averageStep) * 0.005;
-
-    return isEqual ? averageStep : null;
   }
 }

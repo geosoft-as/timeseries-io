@@ -265,7 +265,7 @@ public final class TimeSeriesReader
 
       while (inputStream.available() > 0) {
 
-        for (TimeSeriesSignal signal : timeSeries.getSignal()) {
+        for (Signal signal : timeSeries.getSignal()) {
           Class<?> valueType = signal.getValueType();
           int stringSize = valueType == Date.class ? 30 : valueType == String.class ? curve.getSize() : 0;
           for (int dimension = 0; dimension < curve.getNDimensions(); dimension++) {
@@ -439,7 +439,7 @@ public final class TimeSeriesReader
           value = Boolean.FALSE;
 
         if (temporaryStorage_ == null) {
-          TimeSeriesSignal signal = timeSeries.getSignals().get(signalNo);
+          Signal signal = timeSeries.getSignals().get(signalNo);
 
           if (shouldCaptureStatistics)
             signal.getStatistics().push(Util.getAsDouble(value));
@@ -469,7 +469,7 @@ public final class TimeSeriesReader
    * @return  The signal instance. Null if there is not adequate information to
    *          define a curve.
    */
-  private static TimeSeriesSignal readSignalDefinition(JsonParser jsonParser)
+  private static Signal readSignalDefinition(JsonParser jsonParser)
   {
     assert jsonParser != null : "jsonParser cannot be null";
 
@@ -594,7 +594,7 @@ public final class TimeSeriesReader
         return;
 
       if (parseEvent == JsonParser.Event.START_OBJECT) {
-        TimeSeriesSignal signal = readSignalDefinition(jsonParser);
+        Signal signal = readSignalDefinition(jsonParser);
         if (signal != null)
           timeSeries.addSignal(signal);
       }
@@ -915,14 +915,14 @@ public final class TimeSeriesReader
     {
       assert timeSeries != null : "timeSeries cannot be null";
 
-      List<TimeSeriesSignal> signals = timeSeries.getSignals();
+      List<Signal> signals = timeSeries.getSignals();
 
       // TODO: Remove data from the store as we go so we don't
       // end up sitting on twice the memory necessary
 
       for (int signalNo = 0; signalNo < data_.size(); signalNo++) {
         List<List<Object>> signalData = data_.get(signalNo);
-        TimeSeriesSignal signal = signals.get(signalNo);
+        Signal signal = signals.get(signalNo);
         for (int dimension = 0; dimension < signalData.size(); dimension++) {
           List<Object> values = signalData.get(dimension);
           for (int index = 0; index < values.size(); index++) {

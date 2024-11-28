@@ -189,7 +189,7 @@ public final class TimeSeriesWriter
    * @param formatter  Curve data formatter. Null if N/A for the specified curve.
    * @return           Width of widest element of the curve. [0,&gt;.
    */
-  private static int computeColumnWidth(TimeSeriesSignal signal, Formatter formatter)
+  private static int computeColumnWidth(Signal signal, Formatter formatter)
   {
     assert curve != null :  "curve cannot be null";
 
@@ -410,7 +410,7 @@ public final class TimeSeriesWriter
     assert indentation != null : "indentation cannot be null";
     assert log != null : "log cannot be null";
 
-    TimeSeriesSignal timeSignal = timeSeries.getNSignals() > 0 ? timSeries.getSignals().get(0) : null;
+    Signal timeSignal = timeSeries.getNSignals() > 0 ? timSeries.getSignals().get(0) : null;
     Formatter timeFormatter = timeSignal != null ? timeSignal.createFormatter(timeSignal, true) : null;
 
     writer_.write('{');

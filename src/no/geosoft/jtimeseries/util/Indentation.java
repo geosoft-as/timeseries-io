@@ -8,9 +8,6 @@ package no.geosoft.jtimeseries.util;
  */
 public final class Indentation
 {
-  /** Pre-created strings of spaces of a given length. */
-  private final static String[] SPACES = new String[100];
-
   /** Current indentation level. [0,&gt;. */
   private final int level_;
 
@@ -19,17 +16,6 @@ public final class Indentation
 
   /** The actual indentation unit string. Cached for speed. */
   private final String indent_;
-
-  /**
-   * Initialize static members of this class.
-   */
-  static {
-    StringBuilder s = new StringBuilder("");
-    for (int i = 0; i < SPACES.length; i++) {
-      SPACES[i] = s.toString();
-      s.append(' ');
-    }
-  }
 
   /**
    * Create an indentation instance of the specified unit,
@@ -49,33 +35,7 @@ public final class Indentation
 
     unit_ = unit;
     level_ = level;
-    indent_ = getSpaces(level_ * unit_);
-  }
-
-  /**
-   * Return a string containing the specified number of
-   * space characters.
-   *
-   * @param n  Length of string to create.
-   * @return   Requested string. If n is less than or equal to
-   *           0 an empty string is returned. Never null.
-   */
-  private static String getSpaces(int n)
-  {
-    // TODO: Not sure why we allow n < 0 here
-    if (n <= 0)
-      return "";
-
-    if (n < SPACES.length)
-      return SPACES[n];
-
-    // This slightly faster than using String.format().
-    // Combined with the caching it is a lot faster for typical strings.
-    StringBuilder s = new StringBuilder("");
-    for (int i = 0; i < n; i++)
-      s.append(' ');
-
-    return s.toString();
+    indent_ = Util.getSpaces(level_ * unit_);
   }
 
   /**

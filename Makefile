@@ -2,6 +2,7 @@ ProjectDisplayName = JTimeSeries
 
 JavaPackages = \
         no/geosoft/jtimeseries \
+        no/geosoft/jtimeseries/util \
 
 JavaLibraries = \
 	javax.json-1.1.3.jar \

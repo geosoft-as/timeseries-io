@@ -39,7 +39,7 @@ public final class JsonUtil
    * @param text  Text to encode. Non-null. Without quotes.
    * @return      Encoded text. Never null. Includes surrounding quotes.
    */
-  static String encode(String text)
+  public static String encode(String text)
   {
     assert text != null : "text cannot be null";
 
@@ -58,7 +58,7 @@ public final class JsonUtil
    * @param key                Key to add. Non-null.
    * @param value              Value of key. May be null.
    */
-  static void add(JsonObjectBuilder jsonObjectBuilder, String key, Object value)
+  public static void add(JsonObjectBuilder jsonObjectBuilder, String key, Object value)
   {
     assert jsonObjectBuilder != null : "jsonObjectBuilder annot be null";
     assert key != null : "key cannot be null";
@@ -128,7 +128,7 @@ public final class JsonUtil
    * @param jsonArrayBuilder  JSON array builder to add to. Non-null.
    * @param value             Value to add. May be null.
    */
-  static void add(JsonArrayBuilder jsonArrayBuilder, Object value)
+  public static void add(JsonArrayBuilder jsonArrayBuilder, Object value)
   {
     assert jsonArrayBuilder != null : "jsonArrayBuilder annot be null";
 
@@ -212,7 +212,7 @@ public final class JsonUtil
    * @param jsonValue  JSON value to get fundamental value from. Non-null.
    * @return           Requested value. May be null, if jsonValue is of NULL type.
    */
-  static Object getValue(JsonValue jsonValue)
+  public static Object getValue(JsonValue jsonValue)
   {
     assert jsonValue != null : "jsonValue cannot be null";
 
@@ -248,6 +248,13 @@ public final class JsonUtil
     }
   }
 
+  public static double[] getDoubleArray(JsonArray jsonArray)
+  {
+    return jsonArray.stream().map(JsonNumber.class::cast) // Cast each value to JsonNumber
+                             .mapToDouble(JsonNumber::doubleValue) // Extract the double value
+                             .toArray();
+  }
+
   /**
    * Check if the specified JSON value represents a
    * primitive (number, string, boolean, null) type.
@@ -270,7 +277,7 @@ public final class JsonUtil
    * @return           True if the array contains any JSON objects,
    *                   false otherwise.
    */
-  static boolean containsObjects(JsonArray jsonArray)
+  public static boolean containsObjects(JsonArray jsonArray)
   {
     for (JsonValue value : jsonArray) {
       if (value instanceof JsonArray && containsObjects((JsonArray) value) || value instanceof JsonObject)
@@ -349,7 +356,7 @@ public final class JsonUtil
    * @param jsonParser  The JSON parser. Non-null.
    * @return            The JSON object builder. Never null.
    */
-  static JsonObjectBuilder readJsonObject(JsonParser jsonParser)
+  public static JsonObjectBuilder readJsonObject(JsonParser jsonParser)
   {
     assert jsonParser != null : "jsonParser cannot be null";
 

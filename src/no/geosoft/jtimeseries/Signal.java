@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import no.geosoft.jtimeseries.util.DataArray;
+import no.geosoft.jtimeseries.util.Util;
 
 /**
  * Model a time series signal as it is defined by the TimeSeries.JSON format.
@@ -304,9 +305,9 @@ final class Signal
     double maxValue = Double.NaN;
 
     int nValues = getNValues();
-    for (int dimensionNo = 0; dimensionNo < nDimensions_; dimensionNo++) {
+    for (int dimension = 0; dimension < nDimensions_; dimension++) {
       for (int index = 0; index < nValues; index++) {
-        double v = Util.getAsDouble(getValue(dimensionNo, index));
+        double v = Util.getAsDouble(getValue(index, dimension));
         if (Double.isNaN(minValue) || v < minValue)
           minValue = v;
         if (Double.isNaN(maxValue) || v > maxValue)
@@ -367,7 +368,7 @@ final class Signal
     s.append("Values........: ");
     for (int dimension = 0; dimension < getNDimensions(); dimension++) {
       for (int index = 0; index < getNValues(); index++) {
-        s.append(getValue(dimension, index) + ", ");
+        s.append(getValue(index, dimension) + ", ");
         if (index == 10)
           break;
       }

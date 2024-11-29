@@ -24,8 +24,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.stream.JsonParser;
 
-import no.geosoft.jtimeseries.util.Util;
 import no.geosoft.jtimeseries.util.ISO8601DateParser;
+import no.geosoft.jtimeseries.util.JsonUtil;
+import no.geosoft.jtimeseries.util.Util;
 
 /**
  * Class for reading TimeSeries.JSON files.
@@ -135,7 +136,7 @@ public final class TimeSeriesReader
    * @param jsonArray  Array constituting the tim series. Non-null.
    * @throws IllegalArgumentException  If jsonArray is null.
    */
-  public JsonReader(JsonArray jsonArray)
+  public TimeSeriesReader(JsonArray jsonArray)
   {
     if (jsonArray == null)
       throw new IllegalArgumentException("jsonArray cannot be null");
@@ -210,7 +211,7 @@ public final class TimeSeriesReader
   public static double isTimeSeries(File file, byte[] content)
   {
     if (file == null)
-      return isJson(content);
+      return isTimeSeries(content);
 
     if (file.isDirectory())
       return 0.0;
@@ -219,7 +220,7 @@ public final class TimeSeriesReader
       return 0.0;
 
     boolean isFileNameMatching = file.getName().toLowerCase(Locale.US).endsWith(".json");
-    double contentMatch = isJson(content);
+    double contentMatch = isTimeSeries(content);
 
     if (isFileNameMatching && content == null)
       return 0.75; // File name is matching, content is not considered
@@ -265,10 +266,13 @@ public final class TimeSeriesReader
 
       while (inputStream.available() > 0) {
 
-        for (Signal signal : timeSeries.getSignal()) {
+        for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+          Signal signal = timeSeries.getSignal(signalNo);
+
           Class<?> valueType = signal.getValueType();
-          int stringSize = valueType == Date.class ? 30 : valueType == String.class ? curve.getSize() : 0;
-          for (int dimension = 0; dimension < curve.getNDimensions(); dimension++) {
+          int stringSize = valueType == Date.class ? 30 : valueType == String.class ? signal.getSize() : 0;
+
+          for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
             Object value = null;
 
             //
@@ -330,7 +334,7 @@ public final class TimeSeriesReader
           }
 
           if (dataListener != null) {
-            boolean shouldContinue = dataListener.dataRead(log);
+            boolean shouldContinue = dataListener.dataRead(timeSeries);
             if (!shouldContinue)
               throw new InterruptedException("Reading aborted by client: " + getSource());
           }
@@ -362,7 +366,7 @@ public final class TimeSeriesReader
   private void readData(JsonParser jsonParser, TimeSeries timeSeries,
                         boolean shouldReadBulkData,
                         boolean shouldCaptureStatistics,
-                        JsonDataListener dataListener)
+                        TimeSeriesDataListener dataListener)
     throws InterruptedException
   {
     assert jsonParser != null : "jsonParser cannot be null";
@@ -439,7 +443,7 @@ public final class TimeSeriesReader
           value = Boolean.FALSE;
 
         if (temporaryStorage_ == null) {
-          Signal signal = timeSeries.getSignals().get(signalNo);
+          Signal signal = timeSeries.getSignal(signalNo);
 
           if (shouldCaptureStatistics)
             signal.getStatistics().push(Util.getAsDouble(value));
@@ -485,23 +489,24 @@ public final class TimeSeriesReader
       JsonParser.Event parseEvent = jsonParser.next();
 
       if (parseEvent == JsonParser.Event.END_OBJECT) {
-        if (curveName == null) {
-          logger_.log(Level.WARNING, "Curve name is missing. Skip curve.");
+        if (signalName == null) {
+          logger_.log(Level.WARNING, "Signal name is missing. Skip curve.");
           return null;
         }
 
+        // TODO: float?
         if (valueType == null) {
-          logger_.log(Level.WARNING, "Curve value type is missing. Skip curve.");
+          logger_.log(Level.WARNING, "Signal value type is missing. Skip curve.");
           return null;
         }
 
-        JsonCurve curve = new JsonCurve(curveName, description,
-                                        quantity, unit, valueType,
-                                        nDimensions);
+        Signal signal = new Signal(signalName, description,
+                                   quantity, unit, valueType,
+                                   nDimensions);
         if (valueType == String.class)
-          curve.setSize(size);
+          signal.setSize(size);
 
-        return curve;
+        return signal;
       }
 
       if (parseEvent == JsonParser.Event.KEY_NAME) {
@@ -512,7 +517,7 @@ public final class TimeSeriesReader
         //
         if (key.equals("name")) {
           jsonParser.next();
-          curveName = jsonParser.getString();
+          signalName = jsonParser.getString();
         }
 
         //
@@ -545,7 +550,7 @@ public final class TimeSeriesReader
         else if (key.equals("valueType")) {
           jsonParser.next();
           String valueTypeString = jsonParser.getString();
-          JsonValueType jsonValueType = JsonValueType.get(valueTypeString);
+          ValueType jsonValueType = ValueType.get(valueTypeString);
           if (jsonValueType == null)
             logger_.log(Level.WARNING, "Unrecognized value type: " + valueTypeString + ". Using float instead.");
           valueType = jsonValueType != null ? jsonValueType.getValueType() : Double.class;
@@ -577,12 +582,12 @@ public final class TimeSeriesReader
   }
 
   /**
-   * Read the curves information from the current location of the JSON parser.
+   * Read the signal definitions from the current location of the JSON parser.
    *
    * @param jsonParser  The JSON parser. Non-null.
    * @param timeSeries  The time series to populate. Non-null.
    */
-  private static void readCurveDefinitions(JsonParser jsonParser, TimeSeries timeSeries)
+  private static void readSignalDefinitions(JsonParser jsonParser, TimeSeries timeSeries)
   {
     assert jsonParser != null : "jsonParser cannot be null";
     assert timeSeries != null : "timeSeries cannot be null";
@@ -619,7 +624,7 @@ public final class TimeSeriesReader
   private TimeSeries readTimeSeries(JsonParser jsonParser,
                                     boolean shouldReadBulkData,
                                     boolean shouldCaptureStatistics,
-                                    TimeSeriesListener dataListener)
+                                    TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
     TimeSeries timeSeries = new TimeSeries();
@@ -674,7 +679,7 @@ public final class TimeSeriesReader
         // "signals"
         //
         if (key.equals("signals")) {
-          readSignalDefinitions(jsonParser, log);
+          readSignalDefinitions(jsonParser, timeSeries);
 
           // If "data" was read before "curves" we move data from temporary storage
           if (temporaryStorage_ != null) {
@@ -688,7 +693,7 @@ public final class TimeSeriesReader
         //
         if (key.equals("data")) {
           // If we didn't read "curves" yet, create a temporary storage for data
-          if (timeSeries.getSignals().isEmpty())
+          if (timeSeries.getNSignals() == 0)
             temporaryStorage_ = new TemporaryStorage();
 
           readData(jsonParser, timeSeries,
@@ -727,10 +732,10 @@ public final class TimeSeriesReader
    *   timeSeriesList = reader.read(true, ...);
    * </pre>
    *
-   * @param timeSerieslist        The logs to populate. These must be the
-   *                      exact same list as retrieved by calling the
-   *                      #read(false,...) on the same JsonReader instance.
-   *                      Otherwise the behavior is unpredictable.
+   * @param timeSeriesList  The time series to populate. These must be the
+   *                        exact same list as retrieved by calling the
+   *                        #read(false,...) on the same JsonReader instance.
+   *                        Otherwise the behavior is unpredictable.
    * @param shouldCaptureStatistics True to capture statistics per curve during read.
    *                      Statistics capture will reduce read performance slightly,
    *                      so set this to false if the statistics are not needed.
@@ -741,7 +746,7 @@ public final class TimeSeriesReader
    * @throws InterruptedException  If the client returns <tt>false</tt> from
    *                      the {@link JsonDataListener#dataRead} method.
    */
-  public void readData(List<JsonLog> timeSerieslist, boolean shouldCaptureStatistics,
+  public void readData(List<TimeSeries> timeSeriesList, boolean shouldCaptureStatistics,
                        TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
@@ -753,13 +758,13 @@ public final class TimeSeriesReader
 
     // This is just a simple brain damage check. The client has all possible
     // ways to get into trouble if calling this method with an arbitrary argument.
-    if (newTimeSerieslist.size() != timeSeriesList.size())
+    if (newTimeSeriesList.size() != timeSeriesList.size())
       throw new IllegalArgumentException("The specified time series are incompatible with the original");
 
     // Move the log data from the new to the existing
     for (int i = 0; i < timeSeriesList.size(); i++) {
       TimeSeries existingTimeSeries = timeSeriesList.get(i);
-      TimeSeries newTimeSeries = newTimeSeries.get(i);
+      TimeSeries newTimeSeries = newTimeSeriesList.get(i);
 
       existingTimeSeries.setSignals(newTimeSeries.getSignals());
     }
@@ -780,7 +785,7 @@ public final class TimeSeriesReader
    */
   public List<TimeSeries> read(boolean shouldReadBulkData,
                             boolean shouldCaptureStatistics,
-                            TimeSeriesListener dataListener)
+                            TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
     List<TimeSeries> timeSeriesList = new ArrayList<>();
@@ -796,7 +801,7 @@ public final class TimeSeriesReader
         JsonParser.Event parseEvent = jsonParser.next();
 
         if (parseEvent == JsonParser.Event.END_ARRAY)
-          return logs;
+          return timeSeriesList;
 
         if (parseEvent == JsonParser.Event.START_OBJECT) {
           TimeSeries timeSeries = readTimeSeries(jsonParser,
@@ -895,7 +900,7 @@ public final class TimeSeriesReader
       if (signalNo >= data_.size())
         data_.add(new ArrayList<List<Object>>());
 
-      List<List<Object>> signalData = data_.get(curveNo);
+      List<List<Object>> signalData = data_.get(signalNo);
 
       if (dimension >= signalData.size())
         signalData.add(new ArrayList<Object>());
@@ -915,14 +920,12 @@ public final class TimeSeriesReader
     {
       assert timeSeries != null : "timeSeries cannot be null";
 
-      List<Signal> signals = timeSeries.getSignals();
-
       // TODO: Remove data from the store as we go so we don't
       // end up sitting on twice the memory necessary
 
       for (int signalNo = 0; signalNo < data_.size(); signalNo++) {
         List<List<Object>> signalData = data_.get(signalNo);
-        Signal signal = signals.get(signalNo);
+        Signal signal = timeSeries.getSignal(signalNo);
         for (int dimension = 0; dimension < signalData.size(); dimension++) {
           List<Object> values = signalData.get(dimension);
           for (int index = 0; index < values.size(); index++) {
@@ -941,14 +944,19 @@ public final class TimeSeriesReader
    *
    * @param arguments  Application arguments. Not used.
    */
-  private static void main(String[] arguments)
+  public static void main(String[] arguments)
   {
     try {
-      File file = new File("C:/Users/jacob/logdata/json/WLC_COMPOSITE_TINY.JSON");
+      File file = new File("C:/Users/jd/logdata/timeseries/test.json");
       TimeSeriesReader reader = new TimeSeriesReader(file);
-      List<TimeSeries> timeSeries = reader.read();
+      TimeSeries timeSeries = reader.readOne();
 
-      System.out.println(TimeSeriesWriter.toString(timeSeries.get(0)));
+      double[] location = timeSeries.getLocation();
+      System.out.println(location[0] + "," + location[1]);
+
+      System.out.println("STEP: " + timeSeries.getActualStep());
+
+      System.out.println(TimeSeriesWriter.toString(timeSeries));
     }
     catch (Exception exception) {
       exception.printStackTrace();

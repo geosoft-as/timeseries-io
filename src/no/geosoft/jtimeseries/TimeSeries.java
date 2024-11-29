@@ -9,14 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
 import no.geosoft.jtimeseries.util.Formatter;
 import no.geosoft.jtimeseries.util.JsonUtil;
+import no.geosoft.jtimeseries.util.Util;
 
 /**
  * Class representing the content of one TimeSeries.JSON entry.
@@ -157,8 +162,34 @@ public final class TimeSeries
     JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
 
     synchronized (this) {
-      header_.forEach(objectBuilder::add);
-      JsonUtil.add(objectBuilder, key, value);
+      header_.forEach(objectBuilder::add); // Capture the existing content
+      JsonUtil.add(objectBuilder, key, value); // Add the new value
+      setHeader(objectBuilder.build());
+    }
+  }
+
+  /**
+   * Set a double array header property of this time series.
+   *
+   * @param key     Key of property to set. Non-null.
+   * @param values  Associated double array. Null to unset.
+   */
+  public void setProperty(String key, double[] values)
+  {
+    if (values == null) {
+      setProperty(key, null);
+      return;
+    }
+
+    JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+    for (double value : values)
+      arrayBuilder.add(value);
+
+    JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
+
+    synchronized (this) {
+      header_.forEach(objectBuilder::add); // Capture the existing content
+      objectBuilder.add(key, arrayBuilder); // Add the new array
       setHeader(objectBuilder.build());
     }
   }
@@ -279,6 +310,20 @@ public final class TimeSeries
     return (Date) Util.getAsType(getProperty(key), Date.class);
   }
 
+  public double[] getPropertyAsDoubleArray(String key)
+  {
+    if (key == null)
+      throw new IllegalArgumentException("key cannot be null");
+
+    JsonValue value = getHeader().get(key);
+
+    if (value == null || value.getValueType() != JsonValue.ValueType.ARRAY)
+      return null;
+
+    JsonArray jsonArray = value.asJsonArray();
+    return JsonUtil.getDoubleArray(jsonArray);
+  }
+
   /**
    * Return name of this timer series.
    *
@@ -337,6 +382,56 @@ public final class TimeSeries
   public void setSource(String source)
   {
     setProperty(WellKnownProperty.SOURCE.getKey(), source);
+  }
+
+  /**
+   * Return the organization behind this time series.
+   *
+   * @return  Organization behind this time series. Null if none provided.
+   */
+  public String getOrganization()
+  {
+    return getPropertyAsString(WellKnownProperty.ORGANIZATION.getKey());
+  }
+
+  /**
+   * Set organization behind this time series.
+   *
+   * @param organization  Organization behind this log. Null to unset.
+   */
+  public void setOrganization(String organization)
+  {
+    setProperty(WellKnownProperty.ORGANIZATION.getKey(), organization);
+  }
+
+  /**
+   * Return license information for the data of this time series.
+   *
+   * @return  License information for the data of this time series. Null if none provided.
+   */
+  public String getLicense()
+  {
+    return getPropertyAsString(WellKnownProperty.LICENSE.getKey());
+  }
+
+  /**
+   * Set license information for the data of this time series.
+   *
+   * @param license  License information for the data of this time series. Null to unset.
+   */
+  public void setLicense(String license)
+  {
+    setProperty(WellKnownProperty.LICENSE.getKey(), license);
+  }
+
+  public double[] getLocation()
+  {
+    return getPropertyAsDoubleArray(WellKnownProperty.LOCATION.getKey());
+  }
+
+  public void setLocation(double latitude, double longitude)
+  {
+    setProperty(WellKnownProperty.LOCATION.getKey(), new double[] {latitude, longitude});
   }
 
   /**
@@ -399,6 +494,18 @@ public final class TimeSeries
     return nValues > 0 ? timeSignal.getValue(0, 0) : null;
   }
 
+  public Date getStartTime()
+  {
+    Object startIndex = getStartIndex();
+    return startIndex instanceof Date ? (Date) startIndex : null;
+  }
+
+  public Date getActualStartTime()
+  {
+    Object actualStartIndex = getStartIndex();
+    return actualStartIndex instanceof Date ? (Date) actualStartIndex : null;
+  }
+
   /**
    * Set start index of this log in header.
    *
@@ -430,6 +537,12 @@ public final class TimeSeries
       getPropertyAsDouble(WellKnownProperty.TIME_END.getKey());
   }
 
+  public Date getEndTime()
+  {
+    Object endIndex = getEndIndex();
+    return endIndex instanceof Date ? (Date) endIndex : null;
+  }
+
   /**
    * Return the <em>actual</em> end index of this log.
    *
@@ -440,6 +553,12 @@ public final class TimeSeries
     Signal timeSignal = !signals_.isEmpty() ? signals_.get(0) : null;
     int nValues = timeSignal != null ? timeSignal.getNValues() : 0;
     return nValues > 0 ? timeSignal.getValue(nValues - 1, 0) : null;
+  }
+
+  public Date getActualEndTime()
+  {
+    Object actualEndIndex = getEndIndex();
+    return actualEndIndex instanceof Date ? (Date) actualEndIndex : null;
   }
 
   /**
@@ -479,7 +598,7 @@ public final class TimeSeries
    */
   public Double getActualStep()
   {
-    return Util.computeStep(this);
+    return computeStep();
   }
 
   /**
@@ -507,6 +626,11 @@ public final class TimeSeries
       throw new IllegalArgumentException("signal cannot be null");
 
     signals_.add(signal);
+  }
+
+  Signal getSignal(int signalNo)
+  {
+    return signals_.get(signalNo);
   }
 
   public String getSignalName(int signalNo)
@@ -539,14 +663,19 @@ public final class TimeSeries
     return signals_.get(signalNo).getNDimensions();
   }
 
+  public int getSize(int signalNo)
+  {
+    return signals_.get(signalNo).getSize();
+  }
+
   public Object getValue(int signalNo, int index, int dimension)
   {
-    return signals_.get(signalNo).getValue(dimension, index);
+    return signals_.get(signalNo).getValue(index, dimension);
   }
 
   public Object getValue(int signalNo, int index)
   {
-    return signals_.get(signalNo).getValue(0, index);
+    return signals_.get(signalNo).getValue(index, 0);
   }
 
   public Object[] getRange(int signalNo)
@@ -554,61 +683,6 @@ public final class TimeSeries
     return signals_.get(signalNo).getRange();
   }
 
-
-  /**
-   * Return the curves of this log. The first curve
-   * is by convention always the index curve.
-   *
-   * @return  The curves of this log. Never null.
-   */
-  /*
-  public List<JsonCurve> getCurves()
-  {
-    return Collections.unmodifiableList(curves_);
-  }
-  */
-
-  /**
-   * Return the specified curve from this log.
-   *
-   * @param curveNo  Curve number of curve to return. [0,nCurves&gt;.
-   * @return         The requested curve. Never null.
-   * @throws IllegalArgumentException  If curveNo is out of bound.
-   */
-  /*
-  public JsonCurve getCurve(int curveNo)
-  {
-    if (curveNo < 0 || curveNo >= curves_.size())
-      throw new IllegalArgumentException("Invalid curveNo: " + curveNo);
-
-    return curves_.get(curveNo);
-  }
-  */
-
-  /**
-   * Return curve of the specified name from this log.
-   * <p>
-   * If there happens to be more than one curve with this name
-   * the first one encountered is returned.
-   *
-   * @param curveName  Name of curve to find.
-   * @return           The requested curve, or null if not found.
-   * @throws IllegalArgumentException  If curveName is null.
-   */
-  /*
-  public JsonCurve findCurve(String curveName)
-  {
-    if (curveName == null)
-      throw new IllegalArgumentException("curveName cannot be null");
-
-    for (JsonCurve curve : curves_)
-      if (curve.getName().equals(curveName))
-        return curve;
-
-    // Not found
-    return null;
-  }
-  */
 
   public int findSignal(String signalName)
   {
@@ -625,31 +699,15 @@ public final class TimeSeries
   }
 
   /**
-   * Return curve number of the curve with the specified name.
-   * <p>
-   * If there happens to be more than one curve with this name
-   * the first one encountered is returned.
+   * Return the signals of this log. The first signal
+   * is by convention always the index, typically the times.
    *
-   * @param curveName  Name of curve to find.
-   * @return           The requested curve number, or -1 if not found.
-   * @throws IllegalArgumentException  If curveName is null.
+   * @return  The signals of this time series. Never null.
    */
-  /*
-  public int findCurveNo(String curveName)
+  List<Signal> getSignals()
   {
-    if (curveName == null)
-      throw new IllegalArgumentException("curveName cannot be null");
-
-    for (int curveNo = 0; curveNo < curves_.size(); curveNo++) {
-      JsonCurve curve = curves_.get(curveNo);
-      if (curve.getName().equals(curveName))
-        return curveNo;
-    }
-
-    // Not found
-    return -1;
+    return Collections.unmodifiableList(signals_);
   }
-  */
 
   /**
    * Replace the present set of signals.
@@ -692,19 +750,6 @@ public final class TimeSeries
   }
 
   /**
-   * Return the index curve of this log.
-   *
-   * @return  The index curve of this log, or null if the
-   *          log doesn't contain any curves.
-   */
-  /*
-  public JsonCurve getIndexCurve()
-  {
-    return getNCurves() > 0 ? getCurves().get(0) : null;
-  }
-  */
-
-  /**
    * Clear curve data from all curves of this log.
    */
   public void clearSignals()
@@ -727,12 +772,12 @@ public final class TimeSeries
    * Return number of significant digits to use to properly represent
    * the values of the specified signal.
    *
-   * @param curve         Curve to consider. Non-null.
-   * @param isIndexCurve  True if curve is an index curve, false otherwise.
-   * @return              The number of significant digits to use for the
-   *                      specified curve. [0,&gt;.
+   * @param curve    Curve to consider. Non-null.
+   * @param isIndex  True if curve is an index curve, false otherwise.
+   * @return         The number of significant digits to use for the
+   *                 specified curve. [0,&gt;.
    */
-  private int getNSignificantDigits(Signal signal, boolean isTimeSignal)
+  private int getNSignificantDigits(Signal signal, boolean isIndex)
   {
     assert signal != null : "curve cannot be null";
 
@@ -747,7 +792,7 @@ public final class TimeSeries
     if (signal.getNValues() == 0)
       return 0;
 
-    if (!isTimeSignal)
+    if (!isIndex)
       return maxSignificantDigits;
 
     //
@@ -760,7 +805,7 @@ public final class TimeSeries
     if (range[0] == null || range[1] == null)
       return maxSignificantDigits;
 
-    Double step = Util.computeStep(this);
+    Double step = computeStep();
     if (step == null || step == 0.0)
       return maxSignificantDigits;
 
@@ -780,9 +825,12 @@ public final class TimeSeries
    * @return  A formatter that can be used to write the curve data.
    *                      Null if the log data is not of numeric type.
    */
-  Formatter createFormatter(Signal signal, boolean isIndexCurve)
+  Formatter createFormatter(int signalNo)
   {
-    assert signal != null : "signal cannot be null";
+    assert signalNo >= 0 && signalNo < getNSignals() : "Invalid signalNo: " + signalNo;
+
+    Signal signal = signals_.get(signalNo);
+    boolean isIndex = signalNo == 0;
 
     Class<?> valueType = signal.getValueType();
     if (valueType != Double.class && valueType != Float.class)
@@ -797,9 +845,201 @@ public final class TimeSeries
       for (int dimension = 0; dimension < nDimensions; dimension++)
         values[dimension * nValues + index] = Util.getAsDouble(signal.getValue(index, dimension));
 
-    int nSignificantDigits = getNSignificantDigits(signal, isIndexCurve);
+    int nSignificantDigits = getNSignificantDigits(signal, isIndex);
 
     return new Formatter(values, nSignificantDigits, null, null);
+  }
+
+  /**
+   * A simple way to keep track of latency within a system or a pipeline
+   * is to add time stamp or latency signal to the time series. This method will
+   * add the specified latency signal to the given time series and compute latency
+   * from similar signals added earlier.
+   * <p>
+   * The signal should have a numeric suffix, like TIME_T8 etc. or
+   * such a suffix will be added.
+   * <p>
+   * The first signal of this pattern added will contain a timestamp (long
+   * values of milliseconds since Epoch) while later signals added will contain
+   * the latency (in milliseconds) since the <em>previous</em> signal was added.
+   * <p>
+   * Signals may not be a consecutive sequence. TIME_T0 can be followed
+   * by TIME_T4 and so on.
+   *
+   * @param signalName         Name of signal to add. A numeric suffix is added if
+   *                           the name doesn't contain one already.
+   * @param signalDescription  Signal description, typically describing the
+   *                           performed task responsible for the latency. May be null.
+   * @param isTotalLatency     True to make a grand total of latency signals added
+   *                           earlier, false to make it a regular latency signal.
+   * @return                   Actual name of the curve added. Never null.
+   * @throws IllegalArgumentException  If timeSeries or curveName is null.
+   */
+  public String addLatencySignal(String signalName,
+                                 String signalDescription,
+                                 boolean isTotalLatency)
+  {
+    if (signalName == null)
+      throw new IllegalArgumentException("signalName cannot be null");
+
+    //
+    // Split signalName into base name and numeric suffix.
+    // If it doesn't end in a number, suffix will be null.
+    //
+    String baseName = signalName;
+    String suffixString = null;
+
+    Pattern pattern = Pattern.compile("([a-zA-Z_\\s]*)(.*)$");
+    Matcher matcher = pattern.matcher(signalName);
+    if (matcher.find()) {
+      baseName = matcher.group(1);
+      suffixString = matcher.group(2);
+    }
+
+    //
+    // Determine suffix. Start with the one provided (or 0), but check
+    // if this exists and pick the next available one.
+    //
+    int suffix = 0;
+    try {
+      suffix = Integer.parseInt(suffixString);
+    }
+    catch (NumberFormatException exception) {
+      suffix = 0;
+    }
+    while (true) {
+      String name = baseName + suffix;
+      if (findSignal(name) == -1)
+        break;
+      suffix++;
+    }
+
+    //
+    // Create the new signal
+    //
+    String newSignalName = isTotalLatency ? baseName : baseName + suffix;
+    Signal newLatencySignal = new Signal(newSignalName, signalDescription, "Time", "ms", Long.class, 1);
+
+    //
+    // Find all existing latency signals. Since latency signals
+    // may not be consecutive we search a wide range.
+    //
+    List<Integer> latencySignals = new ArrayList<>();
+    suffix = 0;
+    while (suffix < 9999) {
+      String name = baseName + suffix;
+      int signalNo = findSignal(name);
+      if (signalNo != -1)
+        latencySignals.add(signalNo);
+      suffix++;
+    }
+
+    //
+    // Time right now.
+    //
+    long now = System.currentTimeMillis();
+
+    //
+    // If this is the first latency signal, we populate with this number,
+    // otherwise we subtract all numbers proir to this one.
+    //
+    for (int i = 0; i < getNValues(); i++) {
+
+      // Pick the time now and subtract value from the other latency curves
+      Long totalLatency = now;
+
+      for (int signalNo : latencySignals) {
+        Object value = getValue(signalNo, i);
+        Long latency = (Long) Util.getAsType(value, Long.class);
+
+        // In the total latency case we only want to subtract the
+        // initial time stamp.
+        if (isTotalLatency && latency != null && latency < 10000000L)
+          latency = 0L;
+
+        totalLatency = latency != null && totalLatency != null ? totalLatency - latency : null;
+      }
+
+      newLatencySignal.addValue(totalLatency);
+    }
+
+    addSignal(newLatencySignal);
+    return newSignalName;
+  }
+
+  /**
+   * Find actual step value of this time series, being the distance between
+   * values in the index curve. Three values are returned: the <em>minimum step</em>,
+   * the <em>maximum step</em> and the <em>average step</em>. It is left to the caller
+   * to decide if these numbers represents a <em>regular</em> or an <em>irregular</em>
+   * log set.
+   *
+   * @param signal  Signal to get step from. Non-null.
+   * @return        The (minimum, maximum and average) step value of the log.
+   */
+  private double[] findStep()
+  {
+    int nValues = getNValues();
+
+    if (nValues < 2)
+      return new double[] {0.0, 0.0, 0.0};
+
+    double minStep = +Double.MAX_VALUE;
+    double maxStep = -Double.MAX_VALUE;
+    double averageStep = 0.0;
+
+    int nSteps = 0;
+    double indexValue0 = Util.getAsDouble(getValue(0, 0));
+    for (int index = 1; index < nValues; index++) {
+      double indexValue1 = Util.getAsDouble(getValue(0, index));
+      double step = indexValue1 - indexValue0;
+
+      nSteps++;
+
+      if (step < minStep)
+        minStep = step;
+
+      if (step > maxStep)
+        maxStep = step;
+
+      averageStep += (step - averageStep) / nSteps;
+
+      indexValue0 = indexValue1;
+    }
+
+    return new double[] {minStep, maxStep, averageStep};
+  }
+
+  /**
+   * Based on the index curve, compute the step value of the specified log
+   * as it will be reported in the <em>step</em> metadata.
+   * <p>
+   * The method uses the {@link JsonUtil#findStep} method to compute min, max and
+   * average step, and then compare the largest deviation from the average
+   * (min or max) to the average itself.
+   * If this is within some limit (0.5% currently) the step is considered
+   * regular.
+   *
+   * @param log  Log to compute step of. Non-null.
+   * @return     The log step value. null if irregular.
+   */
+  private Double computeStep()
+  {
+    double[] step = findStep();
+
+    double minStep = step[0];
+    double maxStep = step[1];
+    double averageStep = step[2];
+
+    // Find largest deviation from average of the two
+    double d = Math.max(Math.abs(minStep - averageStep), Math.abs(maxStep - averageStep));
+
+    // Figure out if this is close enough to regard as equal
+    // NOTE: If this number causes apparently regular log sets to appear irregular
+    // we might consider adjusting it further, probably as high as 0.01 would be OK.
+    boolean isEqual = d <= Math.abs(averageStep) * 0.005;
+
+    return isEqual ? averageStep : null;
   }
 
   /** {@inheritDoc} */

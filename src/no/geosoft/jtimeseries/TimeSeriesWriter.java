@@ -28,8 +28,9 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import no.geosoft.jtimeseries.util.Formatter;
-import no.geosoft.jtimeseries.util.Indentation;
 import no.geosoft.jtimeseries.util.ISO8601DateParser;
+import no.geosoft.jtimeseries.util.Indentation;
+import no.geosoft.jtimeseries.util.JsonUtil;
 import no.geosoft.jtimeseries.util.Util;
 
 /**
@@ -59,8 +60,8 @@ import no.geosoft.jtimeseries.util.Util;
  * </blockquote>
  *
  * Note that the pretty print mode of this writer will behave different than
- * a standard JSON writer in that it always writes curve data arrays horizontally,
- * with each curve vertically aligned.
+ * a standard JSON writer in that it always writes signal data arrays horizontally,
+ * with each signal vertically aligned.
  * <p>
  * If the time series header contains a valid <em>dataUri</em> property, the time
  * series data will be written in binary form to this location.
@@ -183,22 +184,22 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Compute the width of the widest element of the column of the specified curve.
+   * Compute the width of the widest element of the column of the specified signal.
    *
-   * @param curve      Curve to compute column width of. Non-null.
-   * @param formatter  Curve data formatter. Null if N/A for the specified curve.
-   * @return           Width of widest element of the curve. [0,&gt;.
+   * @param signal     Signal to compute column width of. Non-null.
+   * @param formatter  Signal data formatter. Null if N/A for the specified signal.
+   * @return           Width of widest element of the signal. [0,&gt;.
    */
   private static int computeColumnWidth(Signal signal, Formatter formatter)
   {
-    assert curve != null :  "curve cannot be null";
+    assert signal != null :  "signal cannot be null";
 
     int columnWidth = 0;
     Class<?> valueType = signal.getValueType();
 
     for (int index = 0; index < signal.getNValues(); index++) {
       for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
-        Object value = signal.getValue(dimension, index);
+        Object value = signal.getValue(index, dimension);
 
         String text;
 
@@ -227,11 +228,11 @@ public final class TimeSeriesWriter
 
   /**
    * Get the specified data value as text, according to the specified value type,
-   * the curve formatter, the curve width and the general rules for the JSON format.
+   * the signal formatter, the signal width and the general rules for the TimeSeries.JSON format.
    *
-   * @param value      Curve value to get as text. May be null, in case "null" is returned.
-   * @param valueType  Java value type of the curve of the value. Non-null.
-   * @param formatter  Curve formatter. Specified for floating point values only, null otherwise,
+   * @param value      Signal value to get as text. May be null, in case "null" is returned.
+   * @param valueType  Java value type of the signal value. Non-null.
+   * @param formatter  Signal formatter. Specified for floating point values only, null otherwise,
    * @param width      Total width set aside for the values of this column. [0,&gt;.
    * @return           The JSON token to be written to file. Never null.
    */
@@ -397,7 +398,7 @@ public final class TimeSeriesWriter
    * <p>
    * This method is equal the writeHeader method apart from its special handling
    * of the specific keys startIndex, endIndex and step so that these gets identical
-   * formatting as the index curve of the log.
+   * formatting as the index of the time series.
    *
    * @param header       The time series header. Non-null.
    * @param indentation  The current indentation level. Non-null.
@@ -408,10 +409,10 @@ public final class TimeSeriesWriter
   {
     assert header != null : "header cannot be null";
     assert indentation != null : "indentation cannot be null";
-    assert log != null : "log cannot be null";
+    assert timeSeries != null : "timeSeries cannot be null";
 
-    Signal timeSignal = timeSeries.getNSignals() > 0 ? timSeries.getSignals().get(0) : null;
-    Formatter timeFormatter = timeSignal != null ? timeSignal.createFormatter(timeSignal, true) : null;
+    Signal indexSignal = timeSeries.getNSignals() > 0 ? timeSeries.getSignal(0) : null;
+    Formatter indexFormatter = timeSeries.getNSignals() > 0 ? timeSeries.createFormatter(0) : null;
 
     writer_.write('{');
 
@@ -432,15 +433,12 @@ public final class TimeSeriesWriter
 
       //
       // Special handling of startIndex, endIndex and step so that
-      // they get the same formatting as the index curve data.
+      // they get the same formatting as the index data.
       //
-      if (indexCurveFormatter != null && (key.equals("startIndex") || key.equals("endIndex") || key.equals("step"))) {
+      if (indexFormatter != null && (key.equals("startIndex") || key.equals("endIndex") || key.equals("step"))) {
         double v = Util.getAsDouble(JsonUtil.getValue(value));
-        String text = Double.isFinite(v) ? indexCurveFormatter.format(v) : "null";
+        String text = Double.isFinite(v) ? indexFormatter.format(v) : "null";
         writer_.write(text);
-      }
-      else if (value.getValueType() == JsonValue.ValueType.OBJECT && JsonTable.isTable((JsonObject) value)) {
-        writeObject((JsonObject) value, indentation.push());
       }
       else {
         writeValue(value, indentation.push());
@@ -458,11 +456,11 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Write the curve data of the specified time series to the given file
+   * Write the signal data of the specified time series to the given file
    * in binary form.
    *
-   * @param log   Log of data to write. Non-null.
-   * @param file  File to write to. Non-null.
+   * @param timeSeries  Time series to write. Non-null.
+   * @param file        File to write to. Non-null.
    */
   private void writeDataAsBinary(TimeSeries timeSeries, File file)
     throws IOException
@@ -473,11 +471,13 @@ public final class TimeSeriesWriter
 
     try {
       for (int index = 0; index < timeSeries.getNValues(); index++) {
-        for (TimSeriesSignal signal : timeSeries.getSignals()) {
-          Class<?> valueType = signal.getValueType();
-          int size = signal.getSize();
-          for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
-            Object value = signal.getValue(dimension, index);
+        for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+          Class<?> valueType = timeSeries.getValueType(signalNo);
+
+          int size = timeSeries.getSize(signalNo);
+
+          for (int dimension = 0; dimension < timeSeries.getNDimensions(signalNo); dimension++) {
+            Object value = timeSeries.getValue(signalNo, index, dimension);
 
             //
             // Double
@@ -543,47 +543,47 @@ public final class TimeSeriesWriter
   private void writeDataAsText(TimeSeries timeSeries)
     throws IOException
   {
-    assert log != null : "log cannot be null";
+    assert timeSeries != null : "timeSeries cannot be null";
 
     Indentation indentation = indentation_.push().push().push();
 
-    List<JsonCurve> curves = log.getCurves();
-
-    // Create formatters for each curve
-    Map<JsonCurve,Formatter> formatters = new HashMap<>();
-    for (int curveNo = 0; curveNo < log.getNCurves(); curveNo++) {
-      JsonCurve curve = curves.get(curveNo);
-      Formatter formatter = log.createFormatter(curve, curveNo == 0);
-      formatters.put(curve, formatter);
+    // Create formatters for each signal
+    Map<Integer,Formatter> formatters = new HashMap<>();
+    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+      Formatter formatter = timeSeries.createFormatter(signalNo);
+      formatters.put(signalNo, formatter);
     }
 
     // Compute column width for each data column
-    Map<JsonCurve,Integer> columnWidths = new HashMap<>();
-    for (JsonCurve curve : curves)
-      columnWidths.put(curve, computeColumnWidth(curve, formatters.get(curve)));
+    Map<Integer,Integer> columnWidths = new HashMap<>();
+    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+      Signal signal = timeSeries.getSignal(signalNo);
+      columnWidths.put(signalNo, computeColumnWidth(signal, formatters.get(signalNo)));
+    }
 
-    for (int index = 0; index < log.getNValues(); index++) {
-      for (int curveNo = 0; curveNo < log.getNCurves(); curveNo++) {
-        JsonCurve curve = curves.get(curveNo);
-        Class<?> valueType = curve.getValueType();
-        int nDimensions = curve.getNDimensions();
-        int width = columnWidths.get(curve);
-        Formatter formatter = formatters.get(curve);
+    for (int index = 0; index < timeSeries.getNValues(); index++) {
+      for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+        Signal signal = timeSeries.getSignal(signalNo);
 
-        if (curveNo == 0) {
+        Class<?> valueType = timeSeries.getValueType(signalNo);
+        int nDimensions = timeSeries.getNDimensions(signalNo);
+        int width = columnWidths.get(signalNo);
+        Formatter formatter = formatters.get(signalNo);
+
+        if (signalNo == 0) {
           writer_.write(indentation.toString());
           writer_.write('[');
         }
 
         if (nDimensions > 1) {
-          if (curveNo > 0) {
+          if (signalNo > 0) {
             writer_.write(',');
             writer_.write(spacing_);
           }
 
           writer_.write('[');
           for (int dimension = 0; dimension < nDimensions; dimension ++) {
-            Object value = curve.getValue(dimension, index);
+            Object value = signal.getValue(index, dimension);
             String text = getText(value, valueType, formatter, width);
 
             if (dimension > 0) {
@@ -596,10 +596,10 @@ public final class TimeSeriesWriter
           writer_.write(']');
         }
         else {
-          Object value = curve.getValue(0, index);
+          Object value = signal.getValue(index, 0);
           String text = getText(value, valueType, formatter, width);
 
-          if (curveNo > 0) {
+          if (signalNo > 0) {
             writer_.write(',');
             writer_.write(spacing_);
           }
@@ -609,7 +609,7 @@ public final class TimeSeriesWriter
       }
 
       writer_.write(']');
-      if (index < log.getNValues() - 1) {
+      if (index < timeSeries.getNValues() - 1) {
         writer_.write(',');
         writer_.write(newline_);
       }
@@ -617,21 +617,21 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Write the curve data of the specified JSON log.
+   * Write the curve data of the specified time series instabnce.
    *
-   * @param log           Log to write curve data of. Non-null.
+   * @param timSeries     Time series to data of. Non-null.
    * @throws IOException  If the write operation fails for some reason.
    */
-  private void writeData(JsonLog log)
+  private void writeData(TimeSeries timeSeries)
     throws IOException
   {
-    String dataUri = log.getDataUri();
+    String dataUri = timeSeries.getDataUri();
 
     //
     // Case 1: Write data as JSON text in same stream
     //
     if (dataUri == null) {
-      writeDataAsText(log);
+      writeDataAsText(timeSeries);
     }
 
     //
@@ -647,7 +647,7 @@ public final class TimeSeriesWriter
 
         File dataFile = new File(uri);
 
-        writeDataAsBinary(log, dataFile);
+        writeDataAsBinary(timeSeries, dataFile);
       }
       catch (URISyntaxException exception) {
         logger_.log(Level.SEVERE, "Unable to write binary data to " + dataUri, exception);
@@ -656,29 +656,29 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Write the specified log.
+   * Write the specified time series.
    * <p>
-   * Multiple logs can be written in sequence to the same stream.
+   * Multiple time series can be written in sequence to the same stream.
    * Additional data can be appended to the last one by {@link #append}.
    * When writing is done, close the writer with {@link #close}.
    * <p>
    * If the log header contains a valid <em>dataUri</em> property, the curve
    * data will be written in binary form to this location.
    *
-   * @param log  Log to write. Non-null.
-   * @throws IllegalArgumentException  If log is null.
-   * @throws IOException  If the write operation fails for some reason.
+   * @param timeSeries                 Time series to write. Non-null.
+   * @throws IllegalArgumentException  If time series is null.
+   * @throws IOException               If the write operation fails for some reason.
    */
-  public void write(JsonLog log)
+  public void write(TimeSeries timeSeries)
     throws IOException
   {
-    if (log == null)
-      throw new IllegalArgumentException("log cannot be null");
+    if (timeSeries == null)
+      throw new IllegalArgumentException("timeSeries cannot be null");
 
-    boolean isFirstLog = writer_ == null;
+    boolean isFirstTimeSeries = writer_ == null;
 
     // Create the writer on first write operation
-    if (isFirstLog) {
+    if (isFirstTimeSeries) {
       OutputStream outputStream = file_ != null ? new FileOutputStream(file_) : outputStream_;
       writer_ = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
       writer_.write('[');
@@ -712,7 +712,7 @@ public final class TimeSeriesWriter
     writer_.write("\"header\":");
     writer_.write(spacing_);
 
-    writeHeaderObject(log.getHeader(), indentation, log);
+    writeHeaderObject(timeSeries.getHeader(), indentation, timeSeries);
 
     writer_.write(',');
 
@@ -725,9 +725,7 @@ public final class TimeSeriesWriter
 
     boolean isFirstCurve = true;
 
-    List<JsonCurve> curves = log.getCurves();
-
-    for (JsonCurve curve : curves) {
+    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
 
       if (!isFirstCurve)
         writer_.write(',');
@@ -743,7 +741,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"name\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(curve.getName()));
+      writer_.write(getQuotedText(timeSeries.getSignalName(signalNo)));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -751,7 +749,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"description\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(curve.getDescription()));
+      writer_.write(getQuotedText(timeSeries.getDescription(signalNo)));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -759,7 +757,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"quantity\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(curve.getQuantity()));
+      writer_.write(getQuotedText(timeSeries.getQuantity(signalNo)));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -767,7 +765,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"unit\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(curve.getUnit()));
+      writer_.write(getQuotedText(timeSeries.getUnit(signalNo)));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -775,16 +773,16 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"valueType\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(JsonValueType.get(curve.getValueType()).toString()));
+      writer_.write(getQuotedText(ValueType.get(timeSeries.getValueType(signalNo)).toString()));
       writer_.write(',');
       writer_.write(newline_);
 
       // Max size
-      if (curve.getValueType() == String.class) {
+      if (timeSeries.getValueType(signalNo) == String.class) {
         writer_.write(indentation.toString());
         writer_.write("\"maxSize\":");
         writer_.write(spacing_);
-        writer_.write("" + curve.getSize());
+        writer_.write("" + timeSeries.getSize(signalNo));
         writer_.write(',');
         writer_.write(newline_);
       }
@@ -793,7 +791,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"dimensions\":");
       writer_.write(spacing_);
-      writer_.write("" + curve.getNDimensions());
+      writer_.write("" + timeSeries.getNDimensions(signalNo));
       writer_.write(newline_);
 
       indentation = indentation.pop();
@@ -817,38 +815,37 @@ public final class TimeSeriesWriter
     writer_.write("\"data\": [");
     writer_.write(newline_);
 
-    writeData(log);
+    writeData(timeSeries);
 
-    hasData_ = log.getNValues() > 0;
+    hasData_ = timeSeries.getNValues() > 0;
   }
 
   /**
-   * Append the curve data of the specified log.
+   * Append the signal data of the specified time series.
    * <p>
-   * This feature can be used to <em>stream</em> data to a JSON
-   * destination. By repeatedly clearing and populating the log
-   * curves with new data there is no need for the client to
-   * keep the full volume in memory at any point in time.
+   * This feature can be used to <em>stream</em> data to a time series destination.
+   * By repeatedly clearing and populating the signals with new data there is no need
+   * for the client to keep the full volume in memory at any point in time.
    * <p>
-   * If the log hedaer contains a valid <em>dataUri</em> property, the curve
+   * If the time series header contains a valid <em>dataUri</em> property, the curve
    * data will be written in binary form to this location.
    * <p>
    * <b>NOTE:</b> This method should be called after the
-   * JSON Well Log Format metadata has been written (see {@link #write}),
-   * and the JSON log must be compatible with this.
+   * time series metadata has been written (see {@link #write}),
+   * and the time series instance must be compatible with this.
    * <p>
    * When writing is done, close the stream with {@link #close}.
    *
-   * @param log   Log to append to stream. Non-null.
-   * @throws IllegalArgumentException  If log is null.
+   * @param timeSeries  Time series to append to stream. Non-null.
+   * @throws IllegalArgumentException  If timeSeries is null.
    * @throws IllegalStateException     If the writer is not open for writing.
    * @throws IOException  If the write operation fails for some reason.
    */
-  public void append(JsonLog log)
+  public void append(TimeSeries timeSeries)
     throws IOException
   {
-    if (log == null)
-      throw new IllegalArgumentException("log cannot be null");
+    if (timeSeries == null)
+      throw new IllegalArgumentException("timeSeries cannot be null");
 
     if (writer_ == null)
       throw new IllegalStateException("Writer is not open");
@@ -859,9 +856,9 @@ public final class TimeSeriesWriter
     }
 
     writer_.write(indentation_.toString());
-    writeData(log);
+    writeData(timeSeries);
 
-    if (!hasData_ && log.getNValues() > 0)
+    if (!hasData_ && timeSeries.getNValues() > 0)
       hasData_ = true;
   }
 
@@ -896,47 +893,47 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Convenience method for returning a string representation of the specified logs.
+   * Convenience method for returning a string representation of the specified time series instances.
    * <p>
-   * <b>Note: </b>If a log header contains the <em>dataUri</em> property, this
+   * <b>Note: </b>If a time series header contains the <em>dataUri</em> property, this
    * will be masked for the present operation so that curve data always appears
-   * in the returned JSON string.
+   * in the returned string.
    *
-   * @param logs         Logs to write. Non-null.
-   * @param isPretty     True to write in human readable pretty format, false
-   *                     to write as dense as possible.
-   * @param indentation  The white space indentation used in pretty print mode. [0,&gt;.
-   *                     If isPretty is false, this setting has no effect.
-   * @return             The requested string. Never null.
-   * @throws IllegalArgumentException  If logs is null or indentation is out of bounds.
+   * @param timeSeriesList  Time series instances  to write. Non-null.
+   * @param isPretty        True to write in human readable pretty format, false
+   *                        to write as dense as possible.
+   * @param indentation     The white space indentation used in pretty print mode. [0,&gt;.
+   *                        If isPretty is false, this setting has no effect.
+   * @return                The requested string. Never null.
+   * @throws IllegalArgumentException  If timeSeriesList is null or indentation is out of bounds.
    */
-  public static String toString(List<JsonLog> logs, boolean isPretty, int indentation)
+  public static String toString(List<TimeSeries> timeSeriesList, boolean isPretty, int indentation)
   {
-    if (logs == null)
-      throw new IllegalArgumentException("logs cannot be null");
+    if (timeSeriesList == null)
+      throw new IllegalArgumentException("timeSeriesList cannot be null");
 
     if (indentation < 0)
       throw new IllegalArgumentException("invalid indentation: " + indentation);
 
     ByteArrayOutputStream stringStream = new ByteArrayOutputStream();
-    JsonWriter writer = new JsonWriter(stringStream, isPretty, indentation);
+    TimeSeriesWriter writer = new TimeSeriesWriter(stringStream, isPretty, indentation);
 
     String string = "";
 
     try {
-      for (JsonLog log : logs) {
+      for (TimeSeries timeSeries : timeSeriesList) {
 
         // Temporarily hide the dataUri property or the data will be written
         // to binary file
-        String dataUri = log.getDataUri();
+        String dataUri = timeSeries.getDataUri();
         if (dataUri != null)
-          log.setDataUri(null);
+          timeSeries.setDataUri(null);
 
-        writer.write(log);
+        writer.write(timeSeries);
 
         // Restore dataUri
         if (dataUri != null)
-          log.setDataUri(dataUri);
+          timeSeries.setDataUri(dataUri);
       }
     }
     catch (IOException exception) {
@@ -959,13 +956,13 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Convenience method for returning a string representation of the specified log.
+   * Convenience method for returning a string representation of the specified time series.
    * <p>
    * <b>Note: </b>If a log header contains the <em>dataUri</em> property, this
    * will be masked for the present operation so that curve data always appears
    * in the returned JSON string.
    *
-   * @param log          Log to write. Non-null.
+   * @param timeSeries   Time series to write. Non-null.
    * @param isPretty     True to write in human readable pretty format, false
    *                     to write as dense as possible.
    * @param indentation  The white space indentation used in pretty print mode. [0,&gt;.
@@ -973,37 +970,37 @@ public final class TimeSeriesWriter
    * @return             The requested string. Never null.
    * @throws IllegalArgumentException  If log is null or indentation is out of bounds.
    */
-  public static String toString(JsonLog log, boolean isPretty, int indentation)
+  public static String toString(TimeSeries timeSeries, boolean isPretty, int indentation)
   {
-    if (log == null)
-      throw new IllegalArgumentException("log cannot be null");
+    if (timeSeries == null)
+      throw new IllegalArgumentException("timeSeries cannot be null");
 
     if (indentation < 0)
       throw new IllegalArgumentException("invalid indentation: " + indentation);
 
-    List<JsonLog> logs = new ArrayList<>();
-    logs.add(log);
+    List<TimeSeries> timeSeriesList = new ArrayList<>();
+    timeSeriesList.add(timeSeries);
 
-    return toString(logs, isPretty, indentation);
+    return toString(timeSeriesList, isPretty, indentation);
   }
 
   /**
    * Convenience method for returning a pretty printed string representation
-   * of the specified log.
+   * of the specified time series.
    * <p>
-   * <b>Note: </b>If a log header contains the <em>dataUri</em> property, this
+   * <b>Note: </b>If the time series header contains the <em>dataUri</em> property, this
    * will be masked for the present operation so that curve data always appears
-   * in the returned JSON string.
+   * in the returned string.
    *
-   * @param log  Log to write. Non-null.
-   * @return     The requested string. Never null.
-   * @throws IllegalArgumentException  If log is null.
+   * @param timeSeries  Time series to write. Non-null.
+   * @return            The requested string. Never null.
+   * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public static String toString(JsonLog log)
+  public static String toString(TimeSeries timeSeries)
   {
-    if (log == null)
-      throw new IllegalArgumentException("log cannot be null");
+    if (timeSeries == null)
+      throw new IllegalArgumentException("timeSeries cannot be null");
 
-    return toString(log, true, 2);
+    return toString(timeSeries, true, 2);
   }
 }

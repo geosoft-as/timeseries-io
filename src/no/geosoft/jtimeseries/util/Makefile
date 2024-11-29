@@ -8,5 +8,6 @@ Source  = \
 	ISO8601DateParser.java \
 	JsonUtil.java \
 	RunningPercentile.java \
+	Util.java \
 
 include $(DEV_HOME)/jtimeseries/Makefile

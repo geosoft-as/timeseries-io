@@ -628,6 +628,21 @@ public final class TimeSeries
     signals_.add(signal);
   }
 
+  public void addSignal(String name,
+                        String description,
+                        String quantity,
+                        String unit,
+                        Class<?> valueType,
+                        int nDimensions)
+  {
+    signals_.add(new Signal(name,
+                            description,
+                            quantity,
+                            unit,
+                            valueType,
+                            nDimensions));
+  }
+
   Signal getSignal(int signalNo)
   {
     return signals_.get(signalNo);
@@ -668,6 +683,12 @@ public final class TimeSeries
     return signals_.get(signalNo).getSize();
   }
 
+  public void setSize(int signalNo, int size)
+  {
+    // TODO: Argument validation
+    signals_.get(signalNo).setSize(size);
+  }
+
   public Object getValue(int signalNo, int index, int dimension)
   {
     return signals_.get(signalNo).getValue(index, dimension);
@@ -676,6 +697,11 @@ public final class TimeSeries
   public Object getValue(int signalNo, int index)
   {
     return signals_.get(signalNo).getValue(index, 0);
+  }
+
+  public void addValue(int signalNo, int dimension, Object value)
+  {
+    signals_.get(signalNo).addValue(dimension, value);
   }
 
   public Object[] getRange(int signalNo)
@@ -849,6 +875,7 @@ public final class TimeSeries
 
     return new Formatter(values, nSignificantDigits, null, null);
   }
+
 
   /**
    * A simple way to keep track of latency within a system or a pipeline

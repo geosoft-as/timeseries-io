@@ -46,14 +46,14 @@ import no.geosoft.jtimeseries.util.Util;
  * </blockquote>
  *
  * If there is to much data to keep in memory, or the writing is based on a
- * streaming source, it is possible to append chunks of data to the last JsonLog
+ * streaming source, it is possible to append chunks of data to the last TimeSeries
  * instance written, like:
  * <blockquote>
  *   <pre>
  *   TimeSeriesWriter writer = new TimeSeriesWriter(new File("path/to/file.json"), true, 2);
- *   writer.write(jsonLog);
- *   writer.append(jsonLog);
- *   writer.append(jsonLog);
+ *   writer.write(timeSeries);
+ *   writer.append(timeSeries);
+ *   writer.append(timeSeries);
  *   :
  *   writer.close();
  *   </pre>
@@ -617,7 +617,7 @@ public final class TimeSeriesWriter
   }
 
   /**
-   * Write the curve data of the specified time series instabnce.
+   * Write the signal data of the specified time series instance.
    *
    * @param timSeries     Time series to data of. Non-null.
    * @throws IOException  If the write operation fails for some reason.
@@ -662,11 +662,11 @@ public final class TimeSeriesWriter
    * Additional data can be appended to the last one by {@link #append}.
    * When writing is done, close the writer with {@link #close}.
    * <p>
-   * If the log header contains a valid <em>dataUri</em> property, the curve
+   * If the header contains a valid <em>dataUri</em> property, the signal
    * data will be written in binary form to this location.
    *
    * @param timeSeries                 Time series to write. Non-null.
-   * @throws IllegalArgumentException  If time series is null.
+   * @throws IllegalArgumentException  If timeSeries is null.
    * @throws IOException               If the write operation fails for some reason.
    */
   public void write(TimeSeries timeSeries)
@@ -685,7 +685,7 @@ public final class TimeSeriesWriter
       writer_.write(newline_);
     }
 
-    // If this is an additional log, close the previous and make ready for a new
+    // If this is an additional time series, close the previous and make ready for a new
     else {
       writer_.write(newline_);
       writer_.write(indentation_.push().push().toString());
@@ -717,17 +717,17 @@ public final class TimeSeriesWriter
     writer_.write(',');
 
     //
-    // "curves"
+    // "signals"
     //
     writer_.write(newline_);
     writer_.write(indentation.toString());
-    writer_.write("\"curves\": [");
+    writer_.write("\"signals\": [");
 
-    boolean isFirstCurve = true;
+    boolean isFirstSignal = true;
 
     for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
 
-      if (!isFirstCurve)
+      if (!isFirstSignal)
         writer_.write(',');
 
       writer_.write(newline_);
@@ -799,7 +799,7 @@ public final class TimeSeriesWriter
       writer_.write('}');
       indentation = indentation.pop();
 
-      isFirstCurve = false;
+      isFirstSignal = false;
     }
 
     writer_.write(newline_);
@@ -827,7 +827,7 @@ public final class TimeSeriesWriter
    * By repeatedly clearing and populating the signals with new data there is no need
    * for the client to keep the full volume in memory at any point in time.
    * <p>
-   * If the time series header contains a valid <em>dataUri</em> property, the curve
+   * If the time series header contains a valid <em>dataUri</em> property, the signal
    * data will be written in binary form to this location.
    * <p>
    * <b>NOTE:</b> This method should be called after the
@@ -879,12 +879,12 @@ public final class TimeSeriesWriter
     writer_.write(']');
     writer_.write(newline_);
 
-    // Complete the log object
+    // Complete the time series object
     writer_.write(indentation_.push().toString());
     writer_.write('}');
     writer_.write(newline_);
 
-    // Complete the logs array
+    // Complete the time series array
     writer_.write(']');
     writer_.write(newline_);
 
@@ -896,7 +896,7 @@ public final class TimeSeriesWriter
    * Convenience method for returning a string representation of the specified time series instances.
    * <p>
    * <b>Note: </b>If a time series header contains the <em>dataUri</em> property, this
-   * will be masked for the present operation so that curve data always appears
+   * will be masked for the present operation so that signal data always appears
    * in the returned string.
    *
    * @param timeSeriesList  Time series instances  to write. Non-null.
@@ -958,8 +958,8 @@ public final class TimeSeriesWriter
   /**
    * Convenience method for returning a string representation of the specified time series.
    * <p>
-   * <b>Note: </b>If a log header contains the <em>dataUri</em> property, this
-   * will be masked for the present operation so that curve data always appears
+   * <b>Note: </b>If a header contains the <em>dataUri</em> property, this
+   * will be masked for the present operation so that signal data always appears
    * in the returned JSON string.
    *
    * @param timeSeries   Time series to write. Non-null.
@@ -968,7 +968,7 @@ public final class TimeSeriesWriter
    * @param indentation  The white space indentation used in pretty print mode. [0,&gt;.
    *                     If isPretty is false, this setting has no effect.
    * @return             The requested string. Never null.
-   * @throws IllegalArgumentException  If log is null or indentation is out of bounds.
+   * @throws IllegalArgumentException  If timeSeries is null or indentation is out of bounds.
    */
   public static String toString(TimeSeries timeSeries, boolean isPretty, int indentation)
   {
@@ -989,7 +989,7 @@ public final class TimeSeriesWriter
    * of the specified time series.
    * <p>
    * <b>Note: </b>If the time series header contains the <em>dataUri</em> property, this
-   * will be masked for the present operation so that curve data always appears
+   * will be masked for the present operation so that signal data always appears
    * in the returned string.
    *
    * @param timeSeries  Time series to write. Non-null.

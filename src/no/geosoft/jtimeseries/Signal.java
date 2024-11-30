@@ -252,6 +252,30 @@ final class Signal
     addValue(0, value);
   }
 
+  public void setValue(int index, int dimension, Object value)
+  {
+    if (index < 0 || index >= getNValues())
+      throw new IllegalArgumentException("Invalid index: " + index);
+
+    if (dimension < 0 || dimension >= nDimensions_)
+      throw new IllegalArgumentException("Invalid dimension: " + dimension);
+
+    values_[dimension].set(index, Util.getAsType(value, valueType_));
+
+    // Update size if this is a string signal
+    if (valueType_ == String.class && value != null) {
+      String s = value.toString();
+      int size = s.getBytes(StandardCharsets.UTF_8).length;
+      if (size > size_)
+        size_ = size;
+    }
+  }
+
+  public void setValue(int index, Object value)
+  {
+    setValue(index, 0, value);
+  }
+
   /**
    * Return the number of values in this signal.
    *

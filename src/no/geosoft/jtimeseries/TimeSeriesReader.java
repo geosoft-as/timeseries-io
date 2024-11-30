@@ -255,8 +255,10 @@ public final class TimeSeriesReader
    * @param shouldCaptureStatistics  True to create statistics from the bulk data,
    * @param dataListener             Listener that will be notified when new data has read.
    */
-  private void readBinaryData(TimeSeries timeSeries, File binaryFile,
-                              boolean shouldCaptureStatistics, TimeSeriesDataListener dataListener)
+  private void readBinaryData(TimeSeries timeSeries,
+                              File binaryFile,
+                              boolean shouldCaptureStatistics,
+                              TimeSeriesDataListener dataListener)
     throws InterruptedException, IOException
   {
     DataInputStream inputStream = null;
@@ -265,7 +267,6 @@ public final class TimeSeriesReader
       inputStream = new DataInputStream(new FileInputStream(binaryFile));
 
       while (inputStream.available() > 0) {
-
         for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
           Signal signal = timeSeries.getSignal(signalNo);
 
@@ -784,8 +785,8 @@ public final class TimeSeriesReader
    *                            the {@link JsonDataListener#dataRead} method.
    */
   public List<TimeSeries> read(boolean shouldReadBulkData,
-                            boolean shouldCaptureStatistics,
-                            TimeSeriesDataListener dataListener)
+                               boolean shouldCaptureStatistics,
+                               TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
     List<TimeSeries> timeSeriesList = new ArrayList<>();
@@ -947,16 +948,33 @@ public final class TimeSeriesReader
   public static void main(String[] arguments)
   {
     try {
-      File file = new File("C:/Users/jd/logdata/timeseries/test.json");
-      TimeSeriesReader reader = new TimeSeriesReader(file);
+      File file1 = new File("C:/Users/jacob/logdata/timeseries/test.json");
+      File file2 = new File("C:/Users/jacob/logdata/timeseries/test2.json");
+
+      TimeSeriesReader reader = new TimeSeriesReader(file1);
       TimeSeries timeSeries = reader.readOne();
 
-      double[] location = timeSeries.getLocation();
-      System.out.println(location[0] + "," + location[1]);
+      timeSeries.setDataUri("test.bin");
 
-      System.out.println("STEP: " + timeSeries.getActualStep());
+      int signalNo = timeSeries.addSignal("time", null, null, null, Date.class, 1);
+      timeSeries.addValue(signalNo, new Date());
+      timeSeries.addValue(signalNo, new Date());
+      timeSeries.addValue(signalNo, new Date());
+      timeSeries.addValue(signalNo, new Date());
+      timeSeries.addValue(signalNo, new Date());
+      timeSeries.addValue(signalNo, new Date());
 
-      System.out.println(TimeSeriesWriter.toString(timeSeries));
+      signalNo = timeSeries.findSignal("Error code");
+      timeSeries.setValue(signalNo, 1, "This is a test");
+
+      TimeSeriesWriter writer = new TimeSeriesWriter(file2);
+      writer.write(timeSeries);
+      writer.close();
+
+      reader = new TimeSeriesReader(file2);
+      timeSeries = reader.readOne();
+
+      System.out.println(timeSeries);
     }
     catch (Exception exception) {
       exception.printStackTrace();

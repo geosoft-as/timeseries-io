@@ -661,7 +661,7 @@ public final class TimeSeries
    * @param curve  Curve to add. Non-null.
    * @throws IllegalArgumentException  If curve is null.
    */
-  void addSignal(Signal signal)
+  public void addSignal(Signal signal)
   {
     if (signal == null)
       throw new IllegalArgumentException("signal cannot be null");
@@ -670,7 +670,7 @@ public final class TimeSeries
   }
 
   /**
-   * Find signa of the given name.
+   * Find signal of the given name.
    *
    * @param signalName  Name of signal to find. Non-null.
    * @return            Requested signal, or null if not found.
@@ -690,12 +690,32 @@ public final class TimeSeries
   }
 
   /**
+   * Find index of the signal of the given name.
+   *
+   * @param signalName  Name of signal to find. Non-null.
+   * @return            Index of the specified signal among the ones in the time series. [0,nSignals&gt;.
+   * @throws IllegalArgumentException  If signalName is null.
+   */
+  public int findSignalNo(String signalName)
+  {
+    if (signalName == null)
+      throw new IllegalArgumentException("signalName cannot be null");
+
+    for (int signalNo = 0; signalNo < signals_.size(); signalNo++)
+      if (signals_.get(signalNo).getName().equals(signalName))
+        return signalNo;
+
+    // Not found
+    return -1;
+  }
+
+  /**
    * Return the signals of this log. The first signal
    * is by convention always the index, typically the times.
    *
    * @return  The signals of this time series. Never null.
    */
-  List<Signal> getSignals()
+  public List<Signal> getSignals()
   {
     return Collections.unmodifiableList(signals_);
   }

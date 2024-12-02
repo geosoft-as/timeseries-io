@@ -9,5 +9,6 @@ Source  = \
 	JsonUtil.java \
 	RunningPercentile.java \
 	Util.java \
+	XmlUtil.java \
 
 include $(DEV_HOME)/jtimeseries/Makefile

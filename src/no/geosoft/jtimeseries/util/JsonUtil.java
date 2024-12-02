@@ -248,8 +248,18 @@ public final class JsonUtil
     }
   }
 
+  /**
+   * Get the specified JSON array as a double array.
+   *
+   * @param jsonArray  JSON value to convert. Non-null.
+   * @return           The requested double array. Never null.
+   * @throws IllegalArgumentException  If jsopnArray is null.
+   */
   public static double[] getDoubleArray(JsonArray jsonArray)
   {
+    if (jsonArray == null)
+      throw new IllegalArgumentException("jsonArray cannot be null");
+
     return jsonArray.stream().map(JsonNumber.class::cast) // Cast each value to JsonNumber
                              .mapToDouble(JsonNumber::doubleValue) // Extract the double value
                              .toArray();
@@ -266,6 +276,7 @@ public final class JsonUtil
   static boolean isPrimitive(JsonValue jsonValue)
   {
     assert jsonValue != null : "jsonValue cannot be null";
+
     return jsonValue.getValueType() != JsonValue.ValueType.ARRAY &&
            jsonValue.getValueType() != JsonValue.ValueType.OBJECT;
   }
@@ -276,9 +287,13 @@ public final class JsonUtil
    * @param jsonArray  JSON array to check. Non-null.
    * @return           True if the array contains any JSON objects,
    *                   false otherwise.
+   * @throws IllegalArgumentException  If jsopnArray is null.
    */
   public static boolean containsObjects(JsonArray jsonArray)
   {
+    if (jsonArray == null)
+      throw new IllegalArgumentException("jsonArray cannot be null");
+
     for (JsonValue value : jsonArray) {
       if (value instanceof JsonArray && containsObjects((JsonArray) value) || value instanceof JsonObject)
         return true;

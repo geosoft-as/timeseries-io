@@ -411,8 +411,8 @@ public final class TimeSeriesWriter
     assert indentation != null : "indentation cannot be null";
     assert timeSeries != null : "timeSeries cannot be null";
 
-    Signal indexSignal = timeSeries.getNSignals() > 0 ? timeSeries.getSignal(0) : null;
-    Formatter indexFormatter = timeSeries.getNSignals() > 0 ? timeSeries.createFormatter(0) : null;
+    Signal indexSignal = timeSeries.getIndexSignal();
+    Formatter indexFormatter = indexSignal != null ? timeSeries.createFormatter(indexSignal, true) : null;
 
     writer_.write('{');
 
@@ -471,13 +471,13 @@ public final class TimeSeriesWriter
 
     try {
       for (int index = 0; index < timeSeries.getNValues(); index++) {
-        for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
-          Class<?> valueType = timeSeries.getValueType(signalNo);
+        for (Signal signal : timeSeries.getSignals()) {
+          Class<?> valueType = signal.getValueType();
 
-          int size = timeSeries.getSize(signalNo);
+          int size = signal.getSize();
 
-          for (int dimension = 0; dimension < timeSeries.getNDimensions(signalNo); dimension++) {
-            Object value = timeSeries.getValue(signalNo, index, dimension);
+          for (int dimension = 0; dimension < signal.getNDimensions(); dimension++) {
+            Object value = signal.getValue(index, dimension);
 
             //
             // Double
@@ -548,33 +548,34 @@ public final class TimeSeriesWriter
     Indentation indentation = indentation_.push().push().push();
 
     // Create formatters for each signal
-    Map<Integer,Formatter> formatters = new HashMap<>();
-    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
-      Formatter formatter = timeSeries.createFormatter(signalNo);
-      formatters.put(signalNo, formatter);
+    Map<Signal,Formatter> formatters = new HashMap<>();
+    for (Signal signal : timeSeries.getSignals()) {
+      Formatter formatter = timeSeries.createFormatter(signal, signal == timeSeries.getIndexSignal());
+      formatters.put(signal, formatter);
     }
 
     // Compute column width for each data column
-    Map<Integer,Integer> columnWidths = new HashMap<>();
-    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
-      Signal signal = timeSeries.getSignal(signalNo);
-      columnWidths.put(signalNo, computeColumnWidth(signal, formatters.get(signalNo)));
-    }
+    Map<Signal,Integer> columnWidths = new HashMap<>();
+    for (Signal signal : timeSeries.getSignals())
+      columnWidths.put(signal, computeColumnWidth(signal, formatters.get(signal)));
 
     for (int index = 0; index < timeSeries.getNValues(); index++) {
       for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
-        Signal signal = timeSeries.getSignal(signalNo);
+        Signal signal = timeSeries.getSignals().get(signalNo);
 
-        Class<?> valueType = timeSeries.getValueType(signalNo);
-        int nDimensions = timeSeries.getNDimensions(signalNo);
-        int width = columnWidths.get(signalNo);
-        Formatter formatter = formatters.get(signalNo);
+        int nValues = signal.getNValues();
+
+        Class<?> valueType = signal.getValueType();
+        int nDimensions = signal.getNDimensions();
+        int width = columnWidths.get(signal);
+        Formatter formatter = formatters.get(signal);
 
         if (signalNo == 0) {
           writer_.write(indentation.toString());
           writer_.write('[');
         }
 
+        // Multi-dimensional
         if (nDimensions > 1) {
           if (signalNo > 0) {
             writer_.write(',');
@@ -583,7 +584,7 @@ public final class TimeSeriesWriter
 
           writer_.write('[');
           for (int dimension = 0; dimension < nDimensions; dimension ++) {
-            Object value = signal.getValue(index, dimension);
+            Object value = index < nValues ? signal.getValue(index, dimension) : null;
             String text = getText(value, valueType, formatter, width);
 
             if (dimension > 0) {
@@ -595,8 +596,10 @@ public final class TimeSeriesWriter
           }
           writer_.write(']');
         }
+
+        // Single dimensional
         else {
-          Object value = signal.getValue(index, 0);
+          Object value = index < nValues ? signal.getValue(index, 0) : null;
           String text = getText(value, valueType, formatter, width);
 
           if (signalNo > 0) {
@@ -725,7 +728,7 @@ public final class TimeSeriesWriter
 
     boolean isFirstSignal = true;
 
-    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
+    for (Signal signal : timeSeries.getSignals()) {
 
       if (!isFirstSignal)
         writer_.write(',');
@@ -741,7 +744,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"name\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(timeSeries.getSignalName(signalNo)));
+      writer_.write(getQuotedText(signal.getName()));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -749,7 +752,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"description\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(timeSeries.getDescription(signalNo)));
+      writer_.write(getQuotedText(signal.getDescription()));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -757,7 +760,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"quantity\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(timeSeries.getQuantity(signalNo)));
+      writer_.write(getQuotedText(signal.getQuantity()));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -765,7 +768,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"unit\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(timeSeries.getUnit(signalNo)));
+      writer_.write(getQuotedText(signal.getUnit()));
       writer_.write(',');
       writer_.write(newline_);
 
@@ -773,16 +776,16 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"valueType\":");
       writer_.write(spacing_);
-      writer_.write(getQuotedText(ValueType.get(timeSeries.getValueType(signalNo)).toString()));
+      writer_.write(getQuotedText(ValueType.get(signal.getValueType()).toString()));
       writer_.write(',');
       writer_.write(newline_);
 
       // Max size
-      if (timeSeries.getValueType(signalNo) == String.class) {
+      if (signal.getValueType() == String.class) {
         writer_.write(indentation.toString());
         writer_.write("\"maxSize\":");
         writer_.write(spacing_);
-        writer_.write("" + timeSeries.getSize(signalNo));
+        writer_.write("" + signal.getSize());
         writer_.write(',');
         writer_.write(newline_);
       }
@@ -791,7 +794,7 @@ public final class TimeSeriesWriter
       writer_.write(indentation.toString());
       writer_.write("\"dimensions\":");
       writer_.write(spacing_);
-      writer_.write("" + timeSeries.getNDimensions(signalNo));
+      writer_.write("" + signal.getNDimensions());
       writer_.write(newline_);
 
       indentation = indentation.pop();

@@ -24,13 +24,13 @@ public final class TimeSeriesUtil
   }
 
   /**
-   * Return the line length of the specified log, being the number
+   * Return the line length of the specified time series, being the number
    * of bytes of the <em>binary representation</em> of a single line
-   * of data of the log.
+   * of data of the time series.
    *
-   * @param log  Log to get line length from. Non-null.
-   * @return     The requested line length. [0,&gt;.
-   * @throws IllegalArgumentException  If log is null.
+   * @param timeSeries  Time series to get line length from. Non-null.
+   * @return            The requested line length. [0,&gt;.
+   * @throws IllegalArgumentException  If timeSeries is null.
    */
   public static int getLineLength(TimeSeries timeSeries)
   {
@@ -38,8 +38,8 @@ public final class TimeSeriesUtil
       throw new IllegalArgumentException("timeSeries cannot be null");
 
     int lineLength = 0;
-    for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++)
-      lineLength += timeSeries.getNDimensions(signalNo) * timeSeries.getSize(signalNo);
+    for (Signal signal : timeSeries.getSignals())
+      lineLength += signal.getNDimensions() * signal.getSize();
 
     return lineLength;
   }
@@ -68,12 +68,16 @@ public final class TimeSeriesUtil
     StringBuilder s = new StringBuilder();
     s.append("TimeSeries: " + timeSeries.getName() + "\n");
 
-    for (int i = 0; i < nValues; i++) {
-      s.append("[" + timeSeries.getValue(0, i) + nSignalsText + "]\n");
-      if (i > 1 && nValues > 4) {
-        s.append(": " + (nValues - 4) + " more values\n");
-        s.append("[" + timeSeries.getValue(0, nValues - 1) + nSignalsText + "]\n");
-        break;
+    Signal indexSignal = timeSeries.getIndexSignal();
+
+    if (indexSignal != null) {
+      for (int i = 0; i < nValues; i++) {
+        s.append("[" + indexSignal.getValue(i) + nSignalsText + "]\n");
+        if (i > 1 && nValues > 4) {
+          s.append(": " + (nValues - 4) + " more values\n");
+          s.append("[" + indexSignal.getValue(nValues - 1) + nSignalsText + "]\n");
+          break;
+        }
       }
     }
 
@@ -85,17 +89,18 @@ public final class TimeSeriesUtil
    * is to add time stamp or latency signal to the time series. This method will
    * add the specified latency signal to the given time series and compute latency
    * from similar signals added earlier.
-   * <p>
+   *
    * The signal should have a numeric suffix, like TIME_T8 etc. or
    * such a suffix will be added.
-   * <p>
+   *
    * The first signal of this pattern added will contain a timestamp (long
    * values of milliseconds since Epoch) while later signals added will contain
    * the latency (in milliseconds) since the <em>previous</em> signal was added.
-   * <p>
+   *
    * Signals may not be a consecutive sequence. TIME_T0 can be followed
    * by TIME_T4 and so on.
    *
+   * @param timeSeries         The time series to add latency signal to. Non-null.
    * @param signalName         Name of signal to add. A numeric suffix is added if
    *                           the name doesn't contain one already.
    * @param signalDescription  Signal description, typically describing the
@@ -109,6 +114,9 @@ public final class TimeSeriesUtil
                                         String signalDescription,
                                         boolean isTotalLatency)
   {
+    if (timeSeries == null)
+      throw new IllegalArgumentException("timeSeries cannot be null");
+
     if (signalName == null)
       throw new IllegalArgumentException("signalName cannot be null");
 
@@ -139,7 +147,7 @@ public final class TimeSeriesUtil
     }
     while (true) {
       String name = baseName + suffix;
-      if (timeSeries.findSignal(name) == -1)
+      if (timeSeries.findSignal(name) == null)
         break;
       suffix++;
     }
@@ -154,13 +162,13 @@ public final class TimeSeriesUtil
     // Find all existing latency signals. Since latency signals
     // may not be consecutive we search a wide range.
     //
-    List<Integer> latencySignals = new ArrayList<>();
+    List<Signal> latencySignals = new ArrayList<>();
     suffix = 0;
     while (suffix < 9999) {
       String name = baseName + suffix;
-      int signalNo = timeSeries.findSignal(name);
-      if (signalNo != -1)
-        latencySignals.add(signalNo);
+      Signal signal = timeSeries.findSignal(name);
+      if (signal != null)
+        latencySignals.add(signal);
       suffix++;
     }
 
@@ -178,8 +186,8 @@ public final class TimeSeriesUtil
       // Pick the time now and subtract value from the other latency curves
       Long totalLatency = now;
 
-      for (int signalNo : latencySignals) {
-        Object value = timeSeries.getValue(signalNo, i);
+      for (Signal signal : latencySignals) {
+        Object value = signal.getValue(i);
         Long latency = (Long) Util.getAsType(value, Long.class);
 
         // In the total latency case we only want to subtract the

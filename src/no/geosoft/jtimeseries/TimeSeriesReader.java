@@ -57,7 +57,7 @@ import no.geosoft.jtimeseries.util.Util;
  * <p>
  * If the JSON content is larger than physical memory, it is possible
  * to <em>stream</em> (process than throw away) the data during read.
- * See {@link DataListener}. The same mechanism may be used
+ * See {@link TimeSeriesDataListener}. The same mechanism may be used
  * to <em>abort</em> the reading process during the operation.
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
@@ -152,9 +152,8 @@ public final class TimeSeriesReader
    *
    * @param content  A number of bytes from the start of a file,
    *                 typically 2-3000. May be null, in case 0.0 is returned.
-   * @return  Probability that the sequence is from a JSON Well Log Format
-   *          file. [0.0,1.0].
-   * @see #isJsonFile
+   * @return         Probability that the sequence is from a TimeSeries.JSON file. [0.0,1.0].
+   * @see #isTimeSeries
    */
   private static double isTimeSeries(byte[] content)
   {
@@ -206,7 +205,7 @@ public final class TimeSeriesReader
    * @param file     File to check. Null to classify on content only.
    * @param content  A number of bytes from the start of the file.
    *                 Null to classify on file name only.
-   * @return  Probability that the file is a JSON Well Log file. [0.0,1.0].
+   * @return  Probability that the file is a TimeSeries.JSON file. [0.0,1.0].
    */
   public static double isTimeSeries(File file, byte[] content)
   {
@@ -267,8 +266,7 @@ public final class TimeSeriesReader
       inputStream = new DataInputStream(new FileInputStream(binaryFile));
 
       while (inputStream.available() > 0) {
-        for (int signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
-          Signal signal = timeSeries.getSignal(signalNo);
+        for (Signal signal : timeSeries.getSignals()) {
 
           Class<?> valueType = signal.getValueType();
           int stringSize = valueType == Date.class ? 30 : valueType == String.class ? signal.getSize() : 0;
@@ -444,7 +442,7 @@ public final class TimeSeriesReader
           value = Boolean.FALSE;
 
         if (temporaryStorage_ == null) {
-          Signal signal = timeSeries.getSignal(signalNo);
+          Signal signal = timeSeries.getSignals().get(signalNo);
 
           if (shouldCaptureStatistics)
             signal.getStatistics().push(Util.getAsDouble(value));
@@ -744,10 +742,11 @@ public final class TimeSeriesReader
    *                      Null if not used.
    * @throws IllegalArgumentException  If logs is null.
    * @throws IOException  If the read operation fails for some reason.
-   * @throws InterruptedException  If the client returns <tt>false</tt> from
-   *                      the {@link JsonDataListener#dataRead} method.
+   * @throws InterruptedException  If the client returns <code>false</code> from
+   *                      the {@link TimeSeriesDataListener#dataRead} method.
    */
-  public void readData(List<TimeSeries> timeSeriesList, boolean shouldCaptureStatistics,
+  public void readData(List<TimeSeries> timeSeriesList,
+                       boolean shouldCaptureStatistics,
                        TimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
@@ -781,8 +780,8 @@ public final class TimeSeriesReader
    * @param dataListener        Client data listener. Null if not used.
    * @return                    The logs of the JSON stream. Never null.
    * @throws IOException        If the read operation fails for some reason.
-   * @throws InterruptedException  If the client returns <tt>false</tt> from
-   *                            the {@link JsonDataListener#dataRead} method.
+   * @throws InterruptedException  If the client returns <code>false</code> from
+   *                            the {@link TimeSeriesDataListener#dataRead} method.
    */
   public List<TimeSeries> read(boolean shouldReadBulkData,
                                boolean shouldCaptureStatistics,
@@ -926,7 +925,7 @@ public final class TimeSeriesReader
 
       for (int signalNo = 0; signalNo < data_.size(); signalNo++) {
         List<List<Object>> signalData = data_.get(signalNo);
-        Signal signal = timeSeries.getSignal(signalNo);
+        Signal signal = timeSeries.getSignals().get(signalNo);
         for (int dimension = 0; dimension < signalData.size(); dimension++) {
           List<Object> values = signalData.get(dimension);
           for (int index = 0; index < values.size(); index++) {
@@ -956,16 +955,14 @@ public final class TimeSeriesReader
 
       timeSeries.setDataUri("test.bin");
 
-      int signalNo = timeSeries.addSignal("time", null, null, null, Date.class, 1);
-      timeSeries.addValue(signalNo, new Date());
-      timeSeries.addValue(signalNo, new Date());
-      timeSeries.addValue(signalNo, new Date());
-      timeSeries.addValue(signalNo, new Date());
-      timeSeries.addValue(signalNo, new Date());
-      timeSeries.addValue(signalNo, new Date());
+      Signal s1 = new Signal("time", null, null, null, Date.class, 1);
+      s1.addValue(new Date());
+      s1.addValue(new Date());
+      s1.addValue(new Date());
+      s1.addValue(new Date());
 
-      signalNo = timeSeries.findSignal("Error code");
-      timeSeries.setValue(signalNo, 1, "This is a test");
+      Signal e = timeSeries.findSignal("Error code");
+      e.setValue(1, "This is a test");
 
       TimeSeriesWriter writer = new TimeSeriesWriter(file2);
       writer.write(timeSeries);

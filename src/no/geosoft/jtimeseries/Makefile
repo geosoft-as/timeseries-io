@@ -1,4 +1,5 @@
 Source = \
+	GpxReader.java \
 	Signal.java \
 	Statistics.java \
 	TimeSeries.java \
@@ -8,7 +9,8 @@ Source = \
 	TimeSeriesWriter.java \
 	ValueType.java \
 	WellKnownProperty.java \
+	NewYorkCityMarathon.gpx \
 
-Main = TimeSeriesReader
+Main = TimeSeries
 
 include $(DEV_HOME)/jtimeseries/Makefile

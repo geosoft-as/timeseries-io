@@ -14,7 +14,7 @@ import no.geosoft.jtimeseries.util.Util;
  *
  * @author <a href="mailto:info@petroware.no">Petroware AS</a>
  */
-final class Signal
+public final class Signal
 {
   /** Name of this signal. Never null. */
   private final String name_;
@@ -40,20 +40,25 @@ final class Signal
   /** Signal statistics. */
   private final Statistics statistics_ = new Statistics();
 
+  /**
+   * Signal range. Array of two: smallest and largest value across dimensions.
+   * Null means it needs to be recomputed.
+   */
+  private Object[] range_ = null;
+
   /** The binary size of each element in the signal. Used with binary storage only. */
   private volatile int size_;
 
   /**
    * Create a TimeSeries.JSON signal instance.
    *
-   * @param name                Name (mnemonic) of signal. Non-null.
-   * @param description         Signal long name or description. May be null
-   *                            if not provided.
-   * @param quantity            Quantity of the signal data. Null if unknown or N/A.
-   * @param unit                Unit of measure for the signal data. Null if unitless.
-   * @param valueType           Value type of signal data.
-   * @param nDimensions         Dimension of signal. &lt;0,&gt;.
-   * @throws IllegalArgumentException  If name or valueType is or nDimensions is out of bounds.
+   * @param name         Name (mnemonic) of signal. Non-null.
+   * @param description  Signal long name or description. May be null if not provided.
+   * @param quantity     Quantity of the signal data. Null if unknown or N/A.
+   * @param unit         Unit of measure for the signal data. Null if unitless.
+   * @param valueType    Value type of signal data.
+   * @param nDimensions  Dimension of signal. &lt;0,&gt;.
+   * @throws IllegalArgumentException  If name or valueType is null, or nDimensions is out of bounds.
    */
   public Signal(String name, String description, String quantity, String unit,
                 Class<?> valueType, int nDimensions)
@@ -104,8 +109,7 @@ final class Signal
          signal.getValueType(),
          signal.getNDimensions());
 
-    // Size defaults to 0 for string curves so we set
-    // it explicitly here
+    // Size defaults to 0 for string curves so we set it explicitly here
     size_ = signal.size_;
 
     if (includeValues) {
@@ -239,11 +243,14 @@ final class Signal
       if (size > size_)
         size_ = size;
     }
+
+    range_ = null;
   }
 
   /**
    * Add a value to this signal. If this is a multi-dimensional signal,
-   * the value is added to the first dimension.
+   * the value is added to the first dimension. This is a convenience method
+   * for single dimensional signals.
    *
    * @param value  Value to add. Null indicates absent.
    */
@@ -252,13 +259,28 @@ final class Signal
     addValue(0, value);
   }
 
+  /**
+   * Set a specific value in this signal.
+   *
+   * @param index      Index of signal to set. [0&gt;. If index is beyond current maximum,
+   *                   the signal is padded with nulls.
+   * @param dimension  Dimension entry to set. [0,nDimensions&gt;.
+   * @param value      Value to set. Null for absent.
+   */
   public void setValue(int index, int dimension, Object value)
   {
-    if (index < 0 || index >= getNValues())
+    if (index < 0)
       throw new IllegalArgumentException("Invalid index: " + index);
 
     if (dimension < 0 || dimension >= nDimensions_)
       throw new IllegalArgumentException("Invalid dimension: " + dimension);
+
+    // Pad with nulls if necessary
+    for (int i = getNValues() - 1; i < index; i++) {
+      for (int dim = 0; dim < getNDimensions(); dim++) {
+        addValue(dim, null);
+      }
+    }
 
     values_[dimension].set(index, Util.getAsType(value, valueType_));
 
@@ -269,8 +291,19 @@ final class Signal
       if (size > size_)
         size_ = size;
     }
+
+    range_ = null;
   }
 
+  /**
+   * Set a specific value in this signal.
+   * This is a convenience shorthand for setValue(index, 0, value) where the client
+   * knows the signal is single dimensional.
+   *
+   * @param index  Index of value to set. [0,&gt;. If index is beyond current maximum,
+   *               the signal is padded with nulls.
+   * @param value  Value to set. Null for absent.
+   */
   public void setValue(int index, Object value)
   {
     setValue(index, 0, value);
@@ -301,8 +334,8 @@ final class Signal
   /**
    * Return a specific value from the given dimension of this signal.
    *
-   * @param dimension  Dimension index. [0,nDimensions&gt;.
    * @param index      Position index. [0,nValues&gt;.
+   * @param dimension  Dimension index. [0,nDimensions&gt;.
    * @return           The requested value. Null if absent.
    */
   public Object getValue(int index, int dimension)
@@ -310,6 +343,21 @@ final class Signal
     // Skip argument checking for performance reasons.
 
     return values_[dimension].get(index);
+  }
+
+  /**
+   * Return s specific value from this signal. If the signal has multiple dimensions, the value
+   * from the first dimension is returned. This is a convenience shorthand for getValue(index, 0)
+   * when the client knows that the signal is one dimensional.
+   *
+   * @param index  Index to return value from. [0,nValues&gt;.
+   * @return       The requested value. Null if absent.
+   */
+  public Object getValue(int index)
+  {
+    // Skip argument checking for performance reasons.
+
+    return getValue(index, 0);
   }
 
   /**
@@ -325,22 +373,27 @@ final class Signal
    */
   public Object[] getRange()
   {
-    double minValue = Double.NaN;
-    double maxValue = Double.NaN;
+    if (range_ == null) {
+      double minValue = Double.NaN;
+      double maxValue = Double.NaN;
 
-    int nValues = getNValues();
-    for (int dimension = 0; dimension < nDimensions_; dimension++) {
-      for (int index = 0; index < nValues; index++) {
-        double v = Util.getAsDouble(getValue(index, dimension));
-        if (Double.isNaN(minValue) || v < minValue)
-          minValue = v;
-        if (Double.isNaN(maxValue) || v > maxValue)
-          maxValue = v;
+      int nValues = getNValues();
+      for (int dimension = 0; dimension < nDimensions_; dimension++) {
+        for (int index = 0; index < nValues; index++) {
+          double v = Util.getAsDouble(getValue(index, dimension));
+          if (Double.isNaN(minValue) || v < minValue)
+            minValue = v;
+          if (Double.isNaN(maxValue) || v > maxValue)
+            maxValue = v;
+        }
       }
+
+      range_ = new Object[2];
+      range_[0] = Util.getAsType(minValue, valueType_);
+      range_[1] = Util.getAsType(maxValue, valueType_);
     }
 
-    return new Object[] {Util.getAsType(minValue, valueType_),
-                         Util.getAsType(maxValue, valueType_)};
+    return new Object[] {range_[0], range_[1]};
   }
 
   /**
@@ -365,6 +418,8 @@ final class Signal
 
     if (valueType_ == String.class)
       size_ = 0;
+
+    range_ = null;
   }
 
   /**
@@ -389,15 +444,34 @@ final class Signal
     s.append("Value type....: " + valueType_ + "\n");
     s.append("N dimensions..: " + nDimensions_ + "\n");
     s.append("N values......: " + getNValues() + "\n");
-    s.append("Values........: ");
-    for (int dimension = 0; dimension < getNDimensions(); dimension++) {
-      for (int index = 0; index < getNValues(); index++) {
+    s.append("Range.........: " + getRange()[0] + " - " + getRange()[1] + "\n");
+    s.append("Values........: " + "\n");
+    for (int index = 0; index < getNValues(); index++) {
+      for (int dimension = 0; dimension < getNDimensions(); dimension++)
         s.append(getValue(index, dimension) + ", ");
-        if (index == 10)
-          break;
-      }
       s.append("\n");
     }
     return s.toString();
+  }
+
+  /**
+   * Testing this class.
+   *
+   * @param arguments  Application arguments. Not used.
+   */
+  public static void main(String[] arguments)
+  {
+    Signal s1 = new Signal("test", null, null, null, Double.class, 4);
+    s1.setValue(10, 2, null);
+    s1.setValue(2, 1, null);
+
+    Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
+    s2.addValue(100.0);
+
+    TimeSeries t = new TimeSeries();
+    t.addSignal(s1);
+    t.addSignal(s2);
+
+    System.out.println(t);
   }
 }

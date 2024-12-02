@@ -308,6 +308,14 @@ public final class TimeSeries
     return (Date) Util.getAsType(getProperty(key), Date.class);
   }
 
+  /**
+   * Return the specified header property as a double array.
+   *
+   * @param key  Key of property to return. Non-null.
+   * @return     The requested double array. Nulll if key is not present or the associated
+   *             value is not compatible with a double array.
+   * @throws IllegalArgumentException  If key is null.
+   */
   public double[] getPropertyAsDoubleArray(String key)
   {
     if (key == null)
@@ -343,9 +351,9 @@ public final class TimeSeries
   }
 
   /**
-   * Get description of this log.
+   * Get description of this time series.
    *
-   * @return  Description of this log. Null if none provided.
+   * @return  Description of this time series. Null if none provided.
    */
   public String getDescription()
   {
@@ -353,7 +361,7 @@ public final class TimeSeries
   }
 
   /**
-   * Set description of this log.
+   * Set description of this time series.
    *
    * @param description  Description to set. Null to unset.
    */
@@ -363,9 +371,9 @@ public final class TimeSeries
   }
 
   /**
-   * Return the source (system or process) of this log.
+   * Return the source (system or process) of this time series.
    *
-   * @return  Source of this log. Null if none provided.
+   * @return  Source of this time series. Null if none provided.
    */
   public String getSource()
   {
@@ -373,9 +381,9 @@ public final class TimeSeries
   }
 
   /**
-   * Set source (system or process) of this log.
+   * Set source (system or process) of this time series.
    *
-   * @param source  Source of this log. Null to unset.
+   * @param source  Source of this time series. Null to unset.
    */
   public void setSource(String source)
   {
@@ -395,7 +403,7 @@ public final class TimeSeries
   /**
    * Set organization behind this time series.
    *
-   * @param organization  Organization behind this log. Null to unset.
+   * @param organization  Organization behind this time series. Null to unset.
    */
   public void setOrganization(String organization)
   {
@@ -422,11 +430,23 @@ public final class TimeSeries
     setProperty(WellKnownProperty.LICENSE.getKey(), license);
   }
 
+  /**
+   * Get location of this time series.
+   *
+   * @return  Location of this time series. Array of two: tatitude, longitude in decimal degrees.
+   *          Null if not provided.
+   */
   public double[] getLocation()
   {
     return getPropertyAsDoubleArray(WellKnownProperty.LOCATION.getKey());
   }
 
+  /**
+   * Set location of this time series.
+   *
+   * @param latitude   Latitude of location to set. Decimal degrees.
+   * @param longitude  Longitude of location to set. Decimal degrees.
+   */
   public void setLocation(double latitude, double longitude)
   {
     setProperty(WellKnownProperty.LOCATION.getKey(), new double[] {latitude, longitude});
@@ -476,14 +496,26 @@ public final class TimeSeries
   public Object getStartIndex()
   {
     return getIndexValueType() == Date.class ?
-      getPropertyAsDate(WellKnownProperty.TIME_START.getKey()) :
-      getPropertyAsDouble(WellKnownProperty.TIME_START.getKey());
+           getPropertyAsDate(WellKnownProperty.TIME_START.getKey()) :
+           getPropertyAsDouble(WellKnownProperty.TIME_START.getKey());
   }
 
   /**
-   * Return the <em>actual</em> start index of this log.
+   * Convenience shorthand for returning the header start index as a date instance.
    *
-   * @return  The actual start index of this log. Null if the log has no values.
+   * @return  Start time as specified in header. Null if not present or not of datetime type.
+   */
+  public Date getStartTime()
+  {
+    Object startIndex = getStartIndex();
+    return startIndex instanceof Date ? (Date) startIndex : null;
+  }
+
+  /**
+   * Return the <em>actual</em> start index of this time series.
+   *
+   * @return  The actual start index of this time series as given by the first entry of the
+   *          index signal. Null if the time series has no values.
    */
   public Object getActualStartIndex()
   {
@@ -492,12 +524,12 @@ public final class TimeSeries
     return nValues > 0 ? timeSignal.getValue(0, 0) : null;
   }
 
-  public Date getStartTime()
-  {
-    Object startIndex = getStartIndex();
-    return startIndex instanceof Date ? (Date) startIndex : null;
-  }
-
+  /**
+   * Return actual start index of this instance as a date instance.
+   *
+   * @return  Actual startindex of this instance as a date instance. Null if the time series
+   *          contains no values, or if the index is not of datetime type.
+   */
   public Date getActualStartTime()
   {
     Object actualStartIndex = getStartIndex();
@@ -535,6 +567,11 @@ public final class TimeSeries
       getPropertyAsDouble(WellKnownProperty.TIME_END.getKey());
   }
 
+  /**
+   * Convenience shorthand for returning the header end index as a date instance.
+   *
+   * @return  End time as specified in header. Null if not present or not of datetime type.
+   */
   public Date getEndTime()
   {
     Object endIndex = getEndIndex();
@@ -542,9 +579,9 @@ public final class TimeSeries
   }
 
   /**
-   * Return the <em>actual</em> end index of this log.
+   * Return the <em>actual</em> end index of this time series.
    *
-   * @return  The actual end index of this log. Null if the log has no values.
+   * @return  The actual end index of this time series. Null if the time series has no values.
    */
   public Object getActualEndIndex()
   {
@@ -553,9 +590,15 @@ public final class TimeSeries
     return nValues > 0 ? timeSignal.getValue(nValues - 1, 0) : null;
   }
 
+  /**
+   * Return actual end index of this instance as a date instance.
+   *
+   * @return  Actual end index of this instance as a date instance. Null if the trime series
+   *          contains not values, or if the index is not of datetime type.
+   */
   public Date getActualEndTime()
   {
-    Object actualEndIndex = getEndIndex();
+    Object actualEndIndex = getActualEndIndex();
     return actualEndIndex instanceof Date ? (Date) actualEndIndex : null;
   }
 
@@ -627,127 +670,23 @@ public final class TimeSeries
   }
 
   /**
-   * Add a new signal to this time series.
+   * Find signa of the given name.
    *
-   * @param name
-   * @param name
-   * @param name
-   * @param name
-   * @param name
-   * @param name
-   * @return  The signal number of the signbal added.
+   * @param signalName  Name of signal to find. Non-null.
+   * @return            Requested signal, or null if not found.
+   * @throws IllegalArgumentException  If signalName is null.
    */
-  public int addSignal(String name,
-                       String description,
-                       String quantity,
-                       String unit,
-                       Class<?> valueType,
-                       int nDimensions)
-  {
-    signals_.add(new Signal(name,
-                            description,
-                            quantity,
-                            unit,
-                            valueType,
-                            nDimensions));
-
-    return signals_.size() - 1;
-  }
-
-  Signal getSignal(int signalNo)
-  {
-    return signals_.get(signalNo);
-  }
-
-  public String getSignalName(int signalNo)
-  {
-    return signals_.get(signalNo).getName();
-  }
-
-  public String getDescription(int signalNo)
-  {
-    return signals_.get(signalNo).getDescription();
-  }
-
-  public String getQuantity(int signalNo)
-  {
-    return signals_.get(signalNo).getQuantity();
-  }
-
-  public String getUnit(int signalNo)
-  {
-    return signals_.get(signalNo).getUnit();
-  }
-
-  public Class<?> getValueType(int signalNo)
-  {
-    return signals_.get(signalNo).getValueType();
-  }
-
-  public int getNDimensions(int signalNo)
-  {
-    return signals_.get(signalNo).getNDimensions();
-  }
-
-  public int getSize(int signalNo)
-  {
-    return signals_.get(signalNo).getSize();
-  }
-
-  public void setSize(int signalNo, int size)
-  {
-    // TODO: Argument validation
-    signals_.get(signalNo).setSize(size);
-  }
-
-  public Object getValue(int signalNo, int index, int dimension)
-  {
-    return signals_.get(signalNo).getValue(index, dimension);
-  }
-
-  public Object getValue(int signalNo, int index)
-  {
-    return signals_.get(signalNo).getValue(index, 0);
-  }
-
-  public void addValue(int signalNo, int dimension, Object value)
-  {
-    signals_.get(signalNo).addValue(dimension, value);
-  }
-
-  public void addValue(int signalNo, Object value)
-  {
-    addValue(signalNo, 0, value);
-  }
-
-  public void setValue(int signalNo, int index, int dimension, Object value)
-  {
-    signals_.get(signalNo).setValue(index, dimension, value);
-  }
-
-  public void setValue(int signalNo, int index, Object value)
-  {
-    setValue(signalNo, index, 0, value);
-  }
-
-
-  public Object[] getRange(int signalNo)
-  {
-    return signals_.get(signalNo).getRange();
-  }
-
-  public int findSignal(String signalName)
+  public Signal findSignal(String signalName)
   {
     if (signalName == null)
       throw new IllegalArgumentException("signalName cannot be null");
 
-    for (int signalNo = 0; signalNo < getNSignals(); signalNo++) {
-      if (getSignalName(signalNo).equals(signalName))
-        return signalNo;
-    }
+    for (Signal signal : signals_)
+      if (signal.getName().equals(signalName))
+        return signal;
 
     // Not found
-    return -1;
+    return null;
   }
 
   /**
@@ -759,6 +698,18 @@ public final class TimeSeries
   List<Signal> getSignals()
   {
     return Collections.unmodifiableList(signals_);
+  }
+
+  /**
+   * Return the index siognal (typically the time erntries) of this time series.
+   * This is a conbvenience shorthand of getSignals().get(0).
+   *
+   * @return  The index signal of this time series. Null if the time series doesn't
+   *          have any signals.
+   */
+  public Signal getIndexSignal()
+  {
+    return signals_.size() > 0 ? signals_.get(0) : null;
   }
 
   /**
@@ -792,9 +743,10 @@ public final class TimeSeries
   }
 
   /**
-   * Return the number of values (per curve) in this log.
+   * Return the number of values in the index signal of this time series,
+   * i.e. the number of time values.
    *
-   * @return  Number of values in this log. [0,&gt;.
+   * @return  Number of timer values in this time series. [0,&gt;.
    */
   public int getNValues()
   {
@@ -821,7 +773,7 @@ public final class TimeSeries
   }
 
   /**
-   * Return number of significant digits to use to properly represent
+   * Return number of significant digits to properly represent
    * the values of the specified signal.
    *
    * @param curve    Curve to consider. Non-null.
@@ -873,16 +825,13 @@ public final class TimeSeries
    * Create a formatter for the data of the specified signal.
    *
    * @param curve         Curve to create formatter for. Non-null.
-   * @param isIndexCurve  True if curve is the index curve, false otherwise.
+   * @param isIndex       True if curve is the index curve, false otherwise.
    * @return  A formatter that can be used to write the curve data.
    *                      Null if the log data is not of numeric type.
    */
-  Formatter createFormatter(int signalNo)
+  Formatter createFormatter(Signal signal, boolean isIndex)
   {
-    assert signalNo >= 0 && signalNo < getNSignals() : "Invalid signalNo: " + signalNo;
-
-    Signal signal = signals_.get(signalNo);
-    boolean isIndex = signalNo == 0;
+    assert signal != null : "signal cannot be null";
 
     Class<?> valueType = signal.getValueType();
     if (valueType != Double.class && valueType != Float.class)
@@ -919,14 +868,16 @@ public final class TimeSeries
     if (nValues < 2)
       return new double[] {0.0, 0.0, 0.0};
 
+    Signal indexSignal = signals_.get(0);
+
     double minStep = +Double.MAX_VALUE;
     double maxStep = -Double.MAX_VALUE;
     double averageStep = 0.0;
 
     int nSteps = 0;
-    double indexValue0 = Util.getAsDouble(getValue(0, 0));
+    double indexValue0 = Util.getAsDouble(indexSignal.getValue(0, 0));
     for (int index = 1; index < nValues; index++) {
-      double indexValue1 = Util.getAsDouble(getValue(0, index));
+      double indexValue1 = Util.getAsDouble(indexSignal.getValue(0, index));
       double step = indexValue1 - indexValue0;
 
       nSteps++;
@@ -946,7 +897,7 @@ public final class TimeSeries
   }
 
   /**
-   * Based on the index curve, compute the step value of the specified log
+   * Based on the index curve, compute the step value of this time series
    * as it will be reported in the <em>step</em> metadata.
    * <p>
    * The method uses the {@link JsonUtil#findStep} method to compute min, max and
@@ -982,5 +933,33 @@ public final class TimeSeries
   public String toString()
   {
     return TimeSeriesWriter.toString(this);
+  }
+
+  /**
+   * Testing this class.
+   *
+   * @param arguments  Applicationarguments. Not used.
+   */
+  public static void main(String[] arguments)
+  {
+    Signal s1 = new Signal("test", null, null, null, Double.class, 4);
+    s1.setValue(10, 2, null);
+    s1.setValue(2, 1, null);
+
+    Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
+    s2.addValue(100.0);
+
+    TimeSeries t = new TimeSeries();
+    t.addSignal(s1);
+    t.addSignal(s2);
+
+    t.setName("BalleKlorin");
+    t.setProperty("TimeSeries.JSON", "1.0");
+    t.setLocation(1.1, 2.2);
+
+    double[] a = t.getPropertyAsDoubleArray("location");
+    System.out.println(a);
+
+    System.out.println(t);
   }
 }

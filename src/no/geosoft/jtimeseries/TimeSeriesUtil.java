@@ -66,7 +66,7 @@ public final class TimeSeriesUtil
     String nSignalsText = nSignals > 1 ? ", ... (" + (nSignals - 1) + " more signals)" : "";
 
     StringBuilder s = new StringBuilder();
-    s.append("Log: " + timeSeries.getName() + "\n");
+    s.append("TimeSeries: " + timeSeries.getName() + "\n");
 
     for (int i = 0; i < nValues; i++) {
       s.append("[" + timeSeries.getValue(0, i) + nSignalsText + "]\n");
@@ -79,7 +79,6 @@ public final class TimeSeriesUtil
 
     return s.toString();
   }
-
 
   /**
    * A simple way to keep track of latency within a system or a pipeline

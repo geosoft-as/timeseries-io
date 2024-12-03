@@ -11,6 +11,6 @@ Source = \
 	WellKnownProperty.java \
 	NewYorkCityMarathon.gpx \
 
-Main = TimeSeries
+Main = GpxReader
 
 include $(DEV_HOME)/jtimeseries/Makefile

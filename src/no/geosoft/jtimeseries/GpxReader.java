@@ -235,7 +235,10 @@ public final class GpxReader
       List<TimeSeries> timeSeriesList = gpxReader.read();
       TimeSeries timeSeries = timeSeriesList.get(0);
 
-      System.out.println(timeSeries);
+      File file = new File("C:/Users/jacob/logdata/timeseries/NY.json");
+      TimeSeriesWriter writer = new TimeSeriesWriter(file);
+      writer.write(timeSeries);
+      writer.close();
     }
     catch (Exception exception) {
       exception.printStackTrace();

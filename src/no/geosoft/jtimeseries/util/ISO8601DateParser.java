@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -73,12 +74,40 @@ import java.util.TimeZone;
  */
 public final class ISO8601DateParser
 {
+  /** Formatter for ISO8601 output. */
+  private static DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder().appendInstant(3)
+                                                                             .toFormatter()
+                                                                             .withZone(ZoneOffset.UTC);
   /**
    * Private constructor to prevent client instantiation.
    */
   private ISO8601DateParser()
   {
     assert false : "This constructor should never be called";
+  }
+
+  /**
+   * Return a Calendar day entry for the given day number (1-based).
+   *
+   * @param dayNumber  Day number to get day for [1,7].
+   * @return           Corresponding day, like Calendar.MONDAY, Calendar.TUESDAY, etc.
+   */
+  private static int getDay(int dayNumber)
+  {
+    assert dayNumber >= 1 && dayNumber <= 7 : "Invalid day number: " + dayNumber;
+
+    switch (dayNumber) {
+      case 1 : return Calendar.MONDAY;
+      case 2 : return Calendar.TUESDAY;
+      case 3 : return Calendar.WEDNESDAY;
+      case 4 : return Calendar.THURSDAY;
+      case 5 : return Calendar.FRIDAY;
+      case 6 : return Calendar.SATURDAY;
+      case 7 : return Calendar.SUNDAY;
+      default :
+        assert false : "This will never happen";
+        return -1;
+    }
   }
 
   /**
@@ -108,10 +137,10 @@ public final class ISO8601DateParser
     if (isWeekDate) {
       int year = Integer.parseInt(basicDateString.substring(0, 4));
       int weekOfYear = Integer.parseInt(basicDateString.substring(5, 7));
-      int dayOfWeek = length == 7 ? Calendar.MONDAY : Integer.parseInt(basicDateString.substring(7));
+      int dayNumberOfWeek = length == 7 ? 1 : Integer.parseInt(basicDateString.substring(7));
       calendar.set(Calendar.YEAR, year);
       calendar.set(Calendar.WEEK_OF_YEAR, weekOfYear);
-      calendar.set(Calendar.DAY_OF_WEEK, dayOfWeek);
+      calendar.set(Calendar.DAY_OF_WEEK, getDay(dayNumberOfWeek));
     }
 
     //
@@ -330,6 +359,6 @@ public final class ISO8601DateParser
     if (date == null)
       throw new IllegalArgumentException("date cannot be null");
 
-    return DateTimeFormatter.ISO_DATE_TIME.withZone(ZoneOffset.UTC).format(Instant.ofEpochMilli(date.getTime()));
+    return FORMATTER.format(Instant.ofEpochMilli(date.getTime()));
   }
 }

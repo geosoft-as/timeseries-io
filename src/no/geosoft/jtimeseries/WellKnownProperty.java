@@ -8,6 +8,9 @@ package no.geosoft.jtimeseries;
 public enum WellKnownProperty
 {
   /** Time series name. */
+  VERSION("TimeSeries.JSON"),
+
+  /** Time series name. */
   NAME("name"),
 
   /** Time series description. */

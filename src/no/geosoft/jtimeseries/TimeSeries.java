@@ -331,6 +331,26 @@ public final class TimeSeries
   }
 
   /**
+   * Return the TimeSeries.JSON version number as it appears in the header.
+   *
+   * @return  The TimeSeries.JSON version. Null if not specified.
+   */
+  public String getVersion()
+  {
+    return getPropertyAsString(WellKnownProperty.VERSION.getKey());
+  }
+
+  /**
+   * Set TimeSeries.JSON version in header.
+   *
+   * @param version  Version to set. Null to unset.
+   */
+  public void setVersion(String version)
+  {
+    setProperty(WellKnownProperty.VERSION.getKey(), version);
+  }
+
+  /**
    * Return name of this timer series.
    *
    * @return  Name of this tim series. Null if none provided.
@@ -473,11 +493,11 @@ public final class TimeSeries
   }
 
   /**
-   * Return value type of the index of this log, typically Double.class
-   * or Date.class.
+   * Return value type of the index signal, typically Date.class, Long.class,
+   * Double.class etc.
    *
-   * @return Value type of the index of this log. Never null.
-   *         If the log has no curves, Double.class is returned.
+   * @return Value type of the index signal. Never null.
+   *         If the time series has no curves, Date.class is returned.
    */
   public Class<?> getIndexValueType()
   {
@@ -485,12 +505,12 @@ public final class TimeSeries
   }
 
   /**
-   * Return start index of this log.
+   * Return start index of this time series.
    * <p>
    * <b>NOTE: </b> This property is taken from the header, and may not
-   * necessarily be in accordance with the <em>actual</em> data of the log.
+   * necessarily be in accordance with the <em>actual</em> data of the time series.
    *
-   * @return Start index of this log. The type will be according to
+   * @return Start index of this time series. The type will be according to
    *         the type of the index curve, @see #getIndexValueType.
    */
   public Object getStartIndex()
@@ -537,7 +557,7 @@ public final class TimeSeries
   }
 
   /**
-   * Set start index of this log in header.
+   * Set start index of this time series in header.
    *
    * @param startIndex  Start index to set. Null to unset. The type should
    *                    be in accordance with the actual type of the index curve
@@ -552,10 +572,10 @@ public final class TimeSeries
   }
 
   /**
-   * Return end index of this log.
+   * Return end index of this time series.
    * <p>
    * <b>NOTE: </b> This property is taken from header, and may not
-   * necessarily be in accordance with the <em>actual</em> data of the log.
+   * necessarily be in accordance with the <em>actual</em> data of the time series.
    *
    * @return End index of this log. The type will be according to
    *         the type of the index curve, @see #getIndexValueType.
@@ -603,7 +623,7 @@ public final class TimeSeries
   }
 
   /**
-   * Set end index of this log in the header.
+   * Set end index of this time series in the header.
    *
    * @param endIndex  End index to set. Null to unset. The type should
    *                  be in accordance with the actual type of the index curve
@@ -652,6 +672,26 @@ public final class TimeSeries
   public void setStep(Double step)
   {
     setProperty(WellKnownProperty.TIME_STEP.getKey(), step);
+  }
+
+  /**
+   * Update extent (start/end/step) in the time series header according to actual start
+   * index in data.
+   *
+   * Note that this method is not called automatically when data are added
+   * or removed from the time series. It is the client responsibility to call
+   * this method to update start/end values if required.
+   */
+  public void updateExtent()
+  {
+    Object actualStartIndex = getActualStartIndex();
+    setStartIndex(actualStartIndex);
+
+    Object actualEndIndex = getActualEndIndex();
+    setEndIndex(actualEndIndex);
+
+    Double step = computeStep();
+    setStep(step);
   }
 
   /**
@@ -710,14 +750,28 @@ public final class TimeSeries
   }
 
   /**
-   * Return the signals of this log. The first signal
-   * is by convention always the index, typically the times.
+   * Return the signals of this time series. The first signal
+   * is by convention always the index, typically the time values.
    *
    * @return  The signals of this time series. Never null.
    */
   public List<Signal> getSignals()
   {
     return Collections.unmodifiableList(signals_);
+  }
+
+  /**
+   * Return the n'th signal of this time series.
+   *
+   * @param signalNo  Signal suumber to get. 0 is the index signal.
+   * @return          The requested signal. Never null.
+   */
+  public Signal getSignal(int signalNo)
+  {
+    if (signalNo < 0 || signalNo >= getNSignals())
+      throw new IllegalArgumentException("Invalid signalNo: " + signalNo);
+
+    return signals_.get(signalNo);
   }
 
   /**
@@ -895,9 +949,9 @@ public final class TimeSeries
     double averageStep = 0.0;
 
     int nSteps = 0;
-    double indexValue0 = Util.getAsDouble(indexSignal.getValue(0, 0));
+    double indexValue0 = Util.getAsDouble(indexSignal.getValue(0));
     for (int index = 1; index < nValues; index++) {
-      double indexValue1 = Util.getAsDouble(indexSignal.getValue(0, index));
+      double indexValue1 = Util.getAsDouble(indexSignal.getValue(index));
       double step = indexValue1 - indexValue0;
 
       nSteps++;
@@ -962,23 +1016,24 @@ public final class TimeSeries
    */
   public static void main(String[] arguments)
   {
-    Signal s1 = new Signal("test", null, null, null, Double.class, 4);
-    s1.setValue(10, 2, null);
-    s1.setValue(2, 1, null);
-
-    Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
-    s2.addValue(100.0);
+    Date date = new Date();
+    long time = date.getTime();
 
     TimeSeries t = new TimeSeries();
+    Signal s1 = new Signal("time", null, "datetime", null, Date.class, 1);
     t.addSignal(s1);
+
+    Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
     t.addSignal(s2);
 
-    t.setName("BalleKlorin");
-    t.setProperty("TimeSeries.JSON", "1.0");
-    t.setLocation(1.1, 2.2);
+    for (int i = 0; i < 20; i++) {
+      s1.addValue(new Date(time + i));
+      s2.addValue(i);
+    }
 
-    double[] a = t.getPropertyAsDoubleArray("location");
-    System.out.println(a);
+    t.updateExtent();
+    t.setVersion("1.0");
+    t.setName("Test");
 
     System.out.println(t);
   }

@@ -2,6 +2,24 @@
 
 ## Introduction
 
+The TimeSeries.JSON format is a modern time series format designed for the future requirements
+of simplicity, compatibility, speed, massive storage, massive transmission, cloud computing
+and big data analytics.
+
+* Based on the _JavaScript Object Notation_ [JSON](https://www.json.org) open standard ([RFC 8259](https://tools.ietf.org/html/rfc8259) and [RFC 7493](https://tools.ietf.org/html/rfc7493))
+* Non-proprietary
+* Text-based, lightweight and human readable
+* Full [UTF-8](https://en.wikipedia.org/wiki/UTF-8) support according to the JSON standard
+* Built-in _no-value_ support
+* Simple syntax consisting of collections of name/value pairs (_objects_) and ordered lists of values (_arrays_)</li>
+* Compact type system
+* Quantity and unit support based on established standards
+* Date and time support through the [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) standard
+* Supports single value and multi-dimensional signals
+* Fast: The simple syntax and streaming nature makes parsing extremely efficient
+* Omnipresent parsers and generators for just about [any](http://json.org) system environment available
+* Existing ecosystem of [NoSQL](https://en.wikipedia.org/wiki/NoSQL) cluster database support with high volume storage, search and indexing, distribution, scalability and high performance analytics</li>
+
 
 
 ## Example
@@ -199,7 +217,7 @@ The binary storage format for each value type is described below:
 |-------|--------|------------|
 | float | 64 bit [IEEE 754](https://en.wikipedia.org/wiki/IEEE_754) floating point representation, [big-endian](https://en.wikipedia.org/wiki/Endianness) | IEEE 754 NaN |
 | integer | 64 bit, [big-endian](https://en.wikipedia.org/wiki/Endianness) | 2<sup>63</sup> - 1, being the largest possible 64 bit number |
-| string  | [UTF-8](https://en.wikipedia.org/wiki/UTF-8) encoded text, left aligned, space padded, `maxSize` _bytes_ (or 20 if not specified) | Empty string |
+| string  | [UTF-8](https://en.wikipedia.org/wiki/UTF-8) encoded text, left aligned, space padded, `maxSize` bytes (or 20 if not specified) | Empty string |
 | boolean | 8 bit, 0 = false, 1 = true |  Any value different from 0 and 1 |
 | datetime | [ASCII](https://en.wikipedia.org/wiki/ASCII) encoded text containing [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) date/time specification, 30 characters | Empty string |
 
@@ -209,3 +227,14 @@ The binary storage format for each value type is described below:
 
 Schema for the TimeSeriers.JSON is available [here](schemas/TimeSeries.json).
 
+
+
+## Repository content
+
+In addition to the detailed format description given here, the present repository contains tools for varioos computing environments
+
+* [java](java/README.md) - Access library in Java
+* [csharp][csharp/README.md] - Access library for .Net
+* [python][python/README.md] - Access library for Python
+* [excel][excel/README.md] - Tools for opening TimeSeries.JSON files in MS/Excel
+* [matlab][matlab/README.md] - Tools for working with TimeSeries.JSON in Matlab

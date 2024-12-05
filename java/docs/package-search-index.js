@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"no.geosoft.timeseries"},{"l":"no.geosoft.timeseries.util"}];updateSearchResults();

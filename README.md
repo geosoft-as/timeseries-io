@@ -136,11 +136,8 @@ The following keys are used for signal definitions:
 | quantity        | string  | Signal quantity such as _concentration_, _pressure_, _force_ etc. Optional. |
 | unit            | string  | Unit of measurement such as _ppm_, _ft_, _bar_, etc. Optional. |
 | valueType       | string  | Signal value type: _float_, _integer_, _string_, _datetime_ or _boolean_. Non-null. Optional. _float_ assumed if not present. |
-| dimensions      | integer | Number of dimensions. [1,&gt;. Non-null. Optional. 1 assumed if not present. |
-| maxSize         | integer | Maximum storage size (number of bytes) for UTF-8 string data.
-                              Used with binary storage in order to align the curve data. [0,&gt;.
-                              Optional. 20 assumed if not present.
-                              Ignored for signals where _valueType_ is other than string. |
+| dimensions      | integer | Number of dimensions. [1,>. Non-null. Optional. 1 assumed if not present. |
+| maxSize         | integer | Maximum storage size (number of bytes) for UTF-8 string data. Used with binary storage in order to align the curve data. [0,&gt;. Optional. 20 assumed if not present. Ignored for signals where _valueType_ is other than string. |
 
 In addition to the listed, clients may add any number of _custom_
 signal definition entries in any form supported by the JSON syntax, but as
@@ -183,7 +180,7 @@ written _horizontally_ and with commas between entries _aligned_:
     ["2025-09-23T14:20:50Z", 245.938,  9.6937, 2.333, 2.356, [1.525, 2.26512, -1.17965E-2, 3.68386], 0.56211, ... ],
     :
     :
-  ]```
+```
 
 
 

@@ -1,7 +1,5 @@
 # TimeSeries.JSON
 
-## Introduction
-
 The TimeSeries.JSON format is a modern time series format designed for the future requirements
 of simplicity, compatibility, speed, massive storage, massive transmission, cloud computing
 and big data analytics.
@@ -36,7 +34,7 @@ and big data analytics.
       "license": "Creative Commons BY-NC",
       "location": [40.785091, -73.968285],
       "timeStart": "2024-12-02T00:00:00.000Z",
-      "timeEnd": "2024-12-02T02:09:56.000Z,
+      "timeEnd": "2024-12-02T02:09:56.000Z",
       "timeStep": null
     },
     "signals": [
@@ -83,10 +81,9 @@ and big data analytics.
       ["2024-12-02T00:14:53.000Z", 40.61294, -74.0298057, 18],
       ["2024-12-02T00:16:15.000Z", 40.61452, -74.0280890, 16],
       ["2024-12-02T00:17:43.000Z", 40.61627, -74.0263295, 12],
-      ["2024-12-02T00:19:22.000Z", 40.61771, -74.0289688, 24],
-      :
+      ["2024-12-02T00:19:22.000Z", 40.61771, -74.0289688, 24]
     ]
-  }
+ }
 ]
 ```
 
@@ -147,15 +144,15 @@ All header data are optional including the header object itself.
 
 The following keys are used for signal definitions:
 
-| Key             | Type    | Description |
-|-----------------|---------|-------------|
-| name            | string  | Signal name or mnemonic. Mandatory. Non-null. |
-| description     | string  | Signal description. Optional. |
+| Key             | Type    | Description                                                                 |
+|-----------------|---------|-----------------------------------------------------------------------------|
+| name            | string  | Signal name or mnemonic. Mandatory. Non-null.                               |
+| description     | string  | Signal description. Optional.                                               |
 | quantity        | string  | Signal quantity such as _concentration_, _pressure_, _force_ etc. Optional. |
-| unit            | string  | Unit of measurement such as _ppm_, _ft_, _bar_, etc. Optional. |
+| unit            | string  | Unit of measurement such as _ppm_, _ft_, _bar_, etc. Optional.              |
 | valueType       | string  | Signal value type: _float_, _integer_, _string_, _datetime_ or _boolean_. Non-null. Optional. _float_ assumed if not present. |
-| dimensions      | integer | Number of dimensions. [1,>. Non-null. Optional. 1 assumed if not present. |
-| maxSize         | integer | Maximum storage size (number of bytes) for UTF-8 string data. Used with binary storage in order to align the curve data. [0,&gt;. Optional. 20 assumed if not present. Ignored for signals where _valueType_ is other than string. |
+| dimensions      | integer | Number of dimensions. [1,>. Non-null. Optional. 1 assumed if not present.   |
+| maxSize         | integer | Maximum storage size (number of bytes) for UTF-8 string data. Used with binary storage in order to align the signals. [0,&gt;. Optional. 20 assumed if not present. Ignored for signals where _valueType_ is other than string. |
 
 In addition to the listed, clients may add any number of _custom_
 signal definition entries in any form supported by the JSON syntax, but as
@@ -170,12 +167,25 @@ If a signal is multi-dimensional, the entry is itself an array of subentries,
 one per dimension.
 
 Measurements are according to the value type defined for the signal,
-or `null` for no-values. The time index is always the first curve listed,
-and must not contain no-values. It is advised that the time index curve is continuously
-increasing or decreasing, but this is not a requirement.
+or `null` for no-values.
+The time index is always the first signal listed, and must not contain no-values.
+It is advised that the time index signals are continuously increasing or decreasing, but this is not a requirement.
 
-No custom additions to the curve definition may alter the _structure_ of the
-data definition as specified above.
+No custom additions to the signal definition may alter the _structure_ of the data definition as specified above.
+
+
+
+## The index
+
+The index is the first signal listed and contains the values to which all other signals are associated.
+
+The index value type is typically _datetime_ indicating the exact time of the associated measurements,
+but this is no requirement.
+
+Sometimes it may be more convenient to keep the index as in integer or float type representing  a time delta
+(like milliseconds or seconds) from the timeStart entry given in the header.
+
+Or the index values can be without any connection to exact time, but simply indicating relative differences.
 
 
 

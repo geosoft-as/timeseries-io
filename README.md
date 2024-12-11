@@ -122,18 +122,18 @@ companies the common properties listed below are defined as _well known_.
 Metadata outside this set has low informational value and is in
 general not fit for further processing.
 
-| Key             | Type          | Description |
-|-----------------|---------------|--------------|
-| TimeSeries.JSON | string        | Version identifier, currently "1.0". |
-| name            | string        | Measurement name. |
-| description     | string        | Measurement description. |
-| source          | string        | Source of the measurement: tool, sensor, system etc. |
-| organization    | string        | Organization behind the measurements. |
-| license         | string        | License information for the time series data. |
-| location        | [float,float] | Geographic location of the measurements: latitude,longitudein decimal degrees. |
-| timeStart       | string        | Time of first measurement. |
-| timeEnd         | string        | Time of last measurement. |
-| timeStep        | float         | Time (in seconds) between time entries, or null if irregular or not known. |
+| Key             | Type          | Description                                                                     |
+|-----------------|---------------|---------------------------------------------------------------------------------|
+| TimeSeries.JSON | string        | Version identifier, currently "1.0".                                            |
+| name            | string        | Measurement name.                                                               |
+| description     | string        | Measurement description.                                                        |
+| source          | string        | Source of the measurement: tool, sensor, system etc.                            |
+| organization    | string        | Organization behind the measurements.                                           |
+| license         | string        | License information for the time series data.                                   |
+| location        | [float,float] | Geographic location of the measurements: latitude,longitude in decimal degrees. |
+| timeStart       | string        | Time of first measurement.                                                      |
+| timeEnd         | string        | Time of last measurement.                                                       |
+| timeStep        | float         | Time (in seconds) between time entries, or null if irregular or not known.      |
 | dataUri         | string        | Point to data source in case this is kept separate. Can be absolute or relative according to the [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier) specification. |
 
 All header data are optional including the header object itself.
@@ -175,17 +175,18 @@ No custom additions to the signal definition may alter the _structure_ of the da
 
 
 
-## The index
+## The time index
 
-The index is the first signal listed and contains the values to which all other signals are associated.
+The time index is the first signal listed and contains the values to which all other signals are associated.
 
-The index value type is typically _datetime_ indicating the exact time of the associated measurements,
+The time index value type is typically _datetime_ indicating the exact time of the associated measurements,
 but this is no requirement.
 
-Sometimes it may be more convenient to keep the index as in integer or float type representing  a time delta
-(like milliseconds or seconds) from the timeStart entry given in the header.
+Sometimes it may be more convenient to keep the index as in integer or float type representing  a time _delta_
+(like milliseconds or seconds) from the `timeStart` entry given in the header.
 
 Or the index values can be without any connection to exact time, but simply indicating relative differences.
+This is all up to the client software to decide.
 
 
 

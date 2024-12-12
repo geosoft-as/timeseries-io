@@ -758,7 +758,33 @@ public final class XmlUtil
     if (element == null)
       throw new IllegalArgumentException("element cannot be null");
 
-    return getValue(element, null);
+    return getValue(element, (String) null);
+  }
+
+  /**
+   * Return the value of the specified element as a double.
+   *
+   * @param element       Element to get content from. Non-null.
+   * @param defaultValue  Default value to return if content is absent or not compatible
+   *                      with double. May be null.
+   * @return              The requested content. May be null if defaultValue is null.
+   * @throws IllegalArgumentException  If element is null.
+   */
+  public static Double getValue(Element element, Double defaultValue)
+  {
+    if (element == null)
+      throw new IllegalArgumentException("element cannot be null");
+
+    String text = getValue(element);
+    if (text == null)
+      return defaultValue;
+
+    try {
+      return Double.parseDouble(text);
+    }
+    catch (NumberFormatException exception) {
+      return defaultValue;
+    }
   }
 
   /**

@@ -113,7 +113,7 @@ and _NaN_) must be avoided. Use `null` instead.
 
 ## Header
 
-The log header contains metadata that describes the overall measurement operation and
+The time series header contains metadata that describes the overall measurement operation and
 consists of any JSON objects and arrays that the producing entity find necessary
 and sufficient.
 

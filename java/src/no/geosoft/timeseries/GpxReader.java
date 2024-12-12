@@ -100,7 +100,18 @@ public final class GpxReader
    */
   private static double isGpx(byte[] content)
   {
-    return 0.0;
+    if (content == null)
+      return 0.0;
+
+    String s = (new String(content)).toLowerCase();
+
+    if (!s.contains("xml"))
+      return 0.1;
+
+    if (s.contains("<gpx"))
+      return 0.95;
+
+    return 0.1;
   }
 
   /**
@@ -129,7 +140,7 @@ public final class GpxReader
    *                 Null to classify on file name only.
    * @return  Probability that the file is a GPX file. [0.0,1.0].
    */
-  private static double isGpx(File file, byte[] content)
+  public static double isGpx(File file, byte[] content)
   {
     if (file == null)
       return isGpx(content);
@@ -148,7 +159,7 @@ public final class GpxReader
     else if (content != null)
       return contentMatch;
     else
-      return 0.2;
+      return 0.02; // File name is not matching, content is not considered
   }
 
   /**

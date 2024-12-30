@@ -162,6 +162,9 @@ public final class TimeSeriesReader
 
     String s = new String(content);
 
+    if (!s.contains("\"TimeSeries.JSON\""))
+      return 0.95;
+
     if (!s.contains("\"header\""))
       return 0.05;
 
@@ -173,7 +176,7 @@ public final class TimeSeriesReader
 
     // Curves may be far into the stream so we can't conclude on it
     if (s.contains("\"signals\""))
-      return 0.95;
+      return 0.90;
 
     // TODO: More tests here
 
@@ -222,7 +225,7 @@ public final class TimeSeriesReader
     double contentMatch = isTimeSeries(content);
 
     if (isFileNameMatching && content == null)
-      return 0.75; // File name is matching, content is not considered
+      return 0.60; // File name is matching, content is not considered
     else if (content != null)
       return contentMatch;
     else

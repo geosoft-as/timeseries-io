@@ -1,15 +1,21 @@
 "use strict"
 
-const Signal = require("./Signal.js");
-const TimeSeries = require("./TimeSeries.js");
+import { Signal } from "./Signal.js";
+import { TimeSeries } from "./TimeSeries.js";
+
+import fs from "fs"; // Node.js
 
 
 //import * as fs from "fs"; // Node.js
 
-const fs = require("fs");
+//const fs = require("fs"); // Browser
 
-
-class TimeSeriesReader
+/**
+ * Class for reading TimeSeries.JSON files.
+ *
+ * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
+ */
+export class TimeSeriesReader
 {
   static read(url)
   {
@@ -46,9 +52,4 @@ class TimeSeriesReader
     return timeSeriesList;
   }
 }
-
-module.exports = TimeSeriesReader
-
-let t = TimeSeriesReader.read("C:/Users/jd/logdata/timeseries/NY.json");
-console.log(t);
 

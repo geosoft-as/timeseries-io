@@ -1,15 +1,15 @@
 "use strict"
 
-const WellKnownProperty = Object.freeze({
+export const WellKnownProperty = Object.freeze({
     VERSION : {key: "TimeSeries.JSON"},
     NAME : {key: "name"},
-    DESCRIPTION : {key: ""},
-    SOURCE : {key: ""},
-    ORGANIZATION : {key: ""},
-    LICENSE : {key: ""},
-    LOCATION : {key: ""},
-    TIME_START : {key: ""},
-    TIME_END : {key: ""},
-    TIME_STEP : {key: ""},
-    DATA_URI : {key: ""},
+    DESCRIPTION : {key: "description"},
+    SOURCE : {key: "source"},
+    ORGANIZATION : {key: "organization"},
+    LICENSE : {key: "license"},
+    LOCATION : {key: "location"},
+    TIME_START : {key: "timeStart"},
+    TIME_END : {key: "timeEnd"},
+    TIME_STEP : {key: "timeStep"},
+    DATA_URI : {key: "dataUri"},
 });

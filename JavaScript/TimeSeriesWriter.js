@@ -1,24 +1,36 @@
 "use strict"
 
-const Signal = require("./Signal.js");
-const TimeSeries = require("./TimeSeries.js");
-const TimeSeriesReader = require("./TimeSeriesReader.js");
+import { Signal } from "./Signal.js";
+import { TimeSeries } from "./TimeSeries.js";
+import { TimeSeriesReader } from "./TimeSeriesReader.js";
 
-class TimeSeriesWriter
+export class TimeSeriesWriter
 {
-  toJson(timeSeries)
+  static toJsonArray(timeSeriesList)
   {
-    let ts = [];
+    if (!Array.isArray(timeSeriesList))
+      throw new TypeError("Invalid array: " + timeSeriesList);
 
-    ts.push({
+    let timeSeriesArray = [];
+    for (let timeSeries of timeSeriesList)
+      timeSeriesArray.push(this.toJsonObject(timeSeries));
+
+    return timeSeriesArray;
+  }
+
+  static toJsonObject(timeSeries)
+  {
+    // Time series JavaScript object
+    let ts = {
       header: timeSeries.getHeader(),
       signals: [],
       data: []
-    });
+    }
 
+    // Signals
     for (let signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
       let signal = timeSeries.getSignal(signalNo);
-      ts[0].signals.push({
+      ts.signals.push({
           name: signal.getName(),
           description: signal.getDescription(),
           quantity: signal.getQuantity(),
@@ -28,35 +40,59 @@ class TimeSeriesWriter
       });
     }
 
+    // Data
     let nValues = timeSeries.getNValues();
     for (let index = 0; index < nValues; index++) {
-      ts[0].data.push([]);
-      let rowNo = ts[0].data[ts[0].length];
-
+      ts.data.push([]);
       for (let signalNo = 0; signalNo < timeSeries.getNSignals(); signalNo++) {
         let signal = timeSeries.getSignal(signalNo);
         let nDimensions = signal.getNDimensions();
 
         if (nDimensions == 1)
+          ts.data[index].push(signal.getValue(index));
 
-
-        let array = nDimension > 1 ? [] : ts[0].data.push([]);
-
-        for (let dimension = 0; dimension < signal.getNDimensions(); dimension++) {
-
-
+        else {
+          let array = [];
+          for (let dimension = 0; dimension < signal.getNDimensions(); dimension++) {
+            array.push(signal.getValue(index, dimension));
+          }
+          ts.data[index].push(array);
         }
       }
     }
 
-    return JSON.stringify(ts, null, 2);
+    return ts;
+  }
+
+  static toString(timeSeries)
+  {
+    let timeSeriesList = Array.isArray(timeSeries) ? timeSeries : [timeSeries];
+    let jsonArray = this.toJsonArray(timeSeriesList);
+    return JSON.stringify(jsonArray, null, 2);
   }
 }
 
+/*
+let timeSignal = new Signal("time", "Time", "time", "s", "datetime", 1);
+let positionSignal = new Signal("position",  "Position", "latlong", "dega", "float", 2);
 
-module.exports = TimeSeriesWriter
+let t = new TimeSeries();
+t.addSignal(timeSignal)
+t.addSignal(positionSignal);
 
-let timeSeriesList = TimeSeriesReader.read("C:/Users/jd/logdata/timeseries/NY.json");
+timeSignal.addValue(0, "12:03");
+timeSignal.addValue(0, "12:04");
+positionSignal.addValue(0, 10.0);
+positionSignal.addValue(1, 11.0);
+positionSignal.addValue(0, 20.0);
+positionSignal.addValue(1, 21.0);
+
+let timeSeriesList = [];
+timeSeriesList.push(t);
+
+
 let timeSeriesWriter = new TimeSeriesWriter();
+console.log(timeSeriesWriter.toString(t));
 
-console.log(timeSeriesWriter.toJson(timeSeriesList[0]));
+
+*/

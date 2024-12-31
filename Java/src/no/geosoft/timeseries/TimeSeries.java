@@ -84,13 +84,13 @@ public final class TimeSeries
     for (String key : timeSeries.getProperties())
       setProperty(key, timeSeries.getProperty(key));
 
-    // Add a copy of the curves with or without curve values
+    // Add a copy of the signals with or without signal values
     for (Signal signal : timeSeries.signals_)
       addSignal(new Signal(signal, includeSignalValues));
   }
 
   /**
-   * Return whether this time series includes curve data
+   * Return whether this time series includes signal data
    * or not, i.e.&nbsp;if only header data was read or created.
    *
    * @return  True if bulk (signal) data is present, false otherwise.
@@ -497,7 +497,7 @@ public final class TimeSeries
    * Double.class etc.
    *
    * @return Value type of the index signal. Never null.
-   *         If the time series has no curves, Date.class is returned.
+   *         If the time series has no signals, Date.class is returned.
    */
   public Class<?> getIndexValueType()
   {
@@ -511,7 +511,7 @@ public final class TimeSeries
    * necessarily be in accordance with the <em>actual</em> data of the time series.
    *
    * @return Start index of this time series. The type will be according to
-   *         the type of the index curve, @see #getIndexValueType.
+   *         the type of the index signal, @see #getIndexValueType.
    */
   public Object getStartIndex()
   {
@@ -560,8 +560,8 @@ public final class TimeSeries
    * Set start index of this time series in header.
    *
    * @param startIndex  Start index to set. Null to unset. The type should
-   *                    be in accordance with the actual type of the index curve
-   *                    of the log.
+   *                    be in accordance with the actual type of the index signal
+   *                    of the time series.
    */
   public void setStartIndex(Object startIndex)
   {
@@ -577,8 +577,8 @@ public final class TimeSeries
    * <b>NOTE: </b> This property is taken from header, and may not
    * necessarily be in accordance with the <em>actual</em> data of the time series.
    *
-   * @return End index of this log. The type will be according to
-   *         the type of the index curve, @see #getIndexValueType.
+   * @return End index of this time series. The type will be according to
+   *         the type of the index signal, @see #getIndexValueType.
    */
   public Object getEndIndex()
   {
@@ -626,8 +626,8 @@ public final class TimeSeries
    * Set end index of this time series in the header.
    *
    * @param endIndex  End index to set. Null to unset. The type should
-   *                  be in accordance with the actual type of the index curve
-   *                  of the log.
+   *                  be in accordance with the actual type of the index signal
+   *                  of the time series.
    */
   public void setEndIndex(Object endIndex)
   {
@@ -638,13 +638,13 @@ public final class TimeSeries
   }
 
   /**
-   * Return the regular step of this log.
+   * Return the regular step of this time series.
    * <p>
    * <b>NOTE: </b> This property is taken from header, and may not
    * necessarily be in accordance with the <em>actual</em> data on the file.
    *
-   * @return The step of the index curve of this log.
-   *         Null should indicate that the log in irregular or the step is unknown.
+   * @return The step of the index signal of this time series.
+   *         Null should indicate that the time series in irregular or the step is unknown.
    */
   public Double getStep()
   {
@@ -652,10 +652,10 @@ public final class TimeSeries
   }
 
   /**
-   * Return the <em>actual</em> step of the index curve of this log.
+   * Return the <em>actual</em> step of the index signal of this time series.
    *
-   * @return  The actual step of the index curve.
-   *          Null if the log has no data or the log set is irregular.
+   * @return  The actual step of the index signal.
+   *          Null if the time series has no data or the time series is irregular.
    */
   public Double getActualStep()
   {
@@ -663,10 +663,10 @@ public final class TimeSeries
   }
 
   /**
-   * Set the regular step of the index curve of this log.
+   * Set the regular step of the index signal of this time series.
    *
    * @param step  Step to set. Null to indicate unknown or that the index is irregular.
-   *              If the log set is time based, the step should be the number
+   *              If the time series is time based, the step should be the number
    *              of <em>milliseconds</em> between samples.
    */
   public void setStep(Double step)
@@ -763,7 +763,7 @@ public final class TimeSeries
   /**
    * Return the n'th signal of this time series.
    *
-   * @param signalNo  Signal suumber to get. 0 is the index signal.
+   * @param signalNo  Signal suumber to get. 0 is the index signal. [0,nSignals&gt;.
    * @return          The requested signal. Never null.
    */
   public Signal getSignal(int signalNo)
@@ -807,9 +807,9 @@ public final class TimeSeries
   }
 
   /**
-   * Return the number of curves in this log.
+   * Return the number of signals in this time series.
    *
-   * @return  Number of curves in this log. [0,&gt;.
+   * @return  Number of signals in this time series. [0,&gt;.
    */
   public int getNSignals()
   {
@@ -820,7 +820,7 @@ public final class TimeSeries
    * Return the number of values in the index signal of this time series,
    * i.e. the number of time values.
    *
-   * @return  Number of timer values in this time series. [0,&gt;.
+   * @return  Number of time values in this time series. [0,&gt;.
    */
   public int getNValues()
   {
@@ -828,7 +828,7 @@ public final class TimeSeries
   }
 
   /**
-   * Clear curve data from all curves of this log.
+   * Clear signal data from all signals of this time series.
    */
   public void clearSignals()
   {
@@ -837,8 +837,8 @@ public final class TimeSeries
   }
 
   /**
-   * Set curve capacity to actual size to save memory.
-   * The assumption is that the curves will not grow any further.
+   * Set signal capacity to actual size to save memory.
+   * The assumption is that the signals will not grow any further.
    */
   void trimSignals()
   {
@@ -850,14 +850,14 @@ public final class TimeSeries
    * Return number of significant digits to properly represent
    * the values of the specified signal.
    *
-   * @param curve    Curve to consider. Non-null.
-   * @param isIndex  True if curve is an index curve, false otherwise.
+   * @param signal   Signal to consider. Non-null.
+   * @param isIndex  True if signal is an index signal, false otherwise.
    * @return         The number of significant digits to use for the
-   *                 specified curve. [0,&gt;.
+   *                 specified signal. [0,&gt;.
    */
   private int getNSignificantDigits(Signal signal, boolean isIndex)
   {
-    assert signal != null : "curve cannot be null";
+    assert signal != null : "signal cannot be null";
 
     Class<?> valueType = signal.getValueType();
 
@@ -898,10 +898,10 @@ public final class TimeSeries
   /**
    * Create a formatter for the data of the specified signal.
    *
-   * @param curve         Curve to create formatter for. Non-null.
-   * @param isIndex       True if curve is the index curve, false otherwise.
-   * @return  A formatter that can be used to write the curve data.
-   *                      Null if the log data is not of numeric type.
+   * @param signal        Signal to create formatter for. Non-null.
+   * @param isIndex       True if signal is the index, false otherwise.
+   * @return  A formatter that can be used to write the signal data.
+   *                      Null if the time series data is not of numeric type.
    */
   Formatter createFormatter(Signal signal, boolean isIndex)
   {
@@ -927,13 +927,13 @@ public final class TimeSeries
 
   /**
    * Find actual step value of this time series, being the distance between
-   * values in the index curve. Three values are returned: the <em>minimum step</em>,
+   * values in the index signal. Three values are returned: the <em>minimum step</em>,
    * the <em>maximum step</em> and the <em>average step</em>. It is left to the caller
    * to decide if these numbers represents a <em>regular</em> or an <em>irregular</em>
-   * log set.
+   * time series.
    *
    * @param signal  Signal to get step from. Non-null.
-   * @return        The (minimum, maximum and average) step value of the log.
+   * @return        The (minimum, maximum and average) step value of the time series.
    */
   private double[] findStep()
   {
@@ -971,7 +971,7 @@ public final class TimeSeries
   }
 
   /**
-   * Based on the index curve, compute the step value of this time series
+   * Based on the index signal, compute the step value of this time series
    * as it will be reported in the <em>step</em> metadata.
    * <p>
    * The method uses the {@link JsonUtil#findStep} method to compute min, max and
@@ -980,8 +980,7 @@ public final class TimeSeries
    * If this is within some limit (0.5% currently) the step is considered
    * regular.
    *
-   * @param log  Log to compute step of. Non-null.
-   * @return     The log step value. null if irregular.
+   * @return   The time series step value. null if irregular.
    */
   private Double computeStep()
   {
@@ -995,7 +994,7 @@ public final class TimeSeries
     double d = Math.max(Math.abs(minStep - averageStep), Math.abs(maxStep - averageStep));
 
     // Figure out if this is close enough to regard as equal
-    // NOTE: If this number causes apparently regular log sets to appear irregular
+    // NOTE: If this number causes apparently regular timeseries to appear irregular
     // we might consider adjusting it further, probably as high as 0.01 would be OK.
     boolean isEqual = d <= Math.abs(averageStep) * 0.005;
 

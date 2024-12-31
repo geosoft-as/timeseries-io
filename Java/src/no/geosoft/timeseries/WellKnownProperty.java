@@ -20,7 +20,7 @@ public enum WellKnownProperty
   SOURCE("source"),
 
   /** Time series organization. */
-  ORGANIZATION("wellbore"),
+  ORGANIZATION("organization"),
 
   /** License information. */
   LICENSE("license"),

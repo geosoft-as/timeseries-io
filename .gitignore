@@ -1,2 +1,4 @@
 obj/
 timeseries.jar
+package-lock.json
+lib/

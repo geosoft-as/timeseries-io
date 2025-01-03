@@ -1,4 +1,32 @@
-"use strict"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Signal.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Signal.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict"
 
 import { Util } from "./Util.js";
 
@@ -9,7 +37,7 @@ import { Util } from "./Util.js";
  * Signals are composed into TimeSeries objects where each measurement
  * is mapped with their associated time.
  *
- * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
+ * @author &lt;a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer&lt;/a>
  */
 export class Signal
 {
@@ -53,7 +81,7 @@ export class Signal
    * @param {string} valueType    Value type of signal data.
    *                              One of "float", "integer", "boolean", "datetime" or "string".
    *                              Undefined converets to "float".
-   * @param {number} nDimensions  Dimension of signal. &lt;0,&gt;. Undefined converts tro 1.
+   * @param {number} nDimensions  Dimension of signal. &amp;lt;0,&amp;gt;. Undefined converts tro 1.
    * @throws TypeError  If name is null, valueType is unknown or nDimensions is out of bounds.
    */
   constructor(name, description, quantity, unit, valueType, nDimensions)
@@ -61,14 +89,14 @@ export class Signal
     if (name == null)
       throw new TypeError("name cannot be null");
 
-    if (nDimensions < 0)
+    if (nDimensions &lt; 0)
       throw new TypeError("Invalid nDimension: " + nDimensions);
 
-    if (valueType == null &&
-        valueType != "float" &&
-        valueType != "integer" &&
-        valueType != "boolean" &&
-        valueType != "datetime" &&
+    if (valueType == null &amp;&amp;
+        valueType != "float" &amp;&amp;
+        valueType != "integer" &amp;&amp;
+        valueType != "boolean" &amp;&amp;
+        valueType != "datetime" &amp;&amp;
         valueType != "string")
       throw new TypeError("Invalid valueType: " + valueType);
 
@@ -80,7 +108,7 @@ export class Signal
 
     let dim = nDimensions != null ? nDimensions : 1;
     this.#values_ = [];
-    for (let i = 0; i < dim; i++)
+    for (let i = 0; i &lt; dim; i++)
       this.#values_.push([]);
 
     switch (this.#valueType_) {
@@ -157,7 +185,7 @@ export class Signal
   /**
    * Return the number of dimensions of this signal.
    *
-   * @return {number}  Number of dimensions of this signal. [1,&gt;.
+   * @return {number}  Number of dimensions of this signal. [1,&amp;gt;.
    */
   getNDimensions()
   {
@@ -167,13 +195,13 @@ export class Signal
   /**
    * Return the size (number of bytes) of the values of this signal when stored
    * in binary format.
-   * <p>
-   * <b>Note:</b> For string values the <em>number of bytes</em> needed to
+   * &lt;p>
+   * &lt;b>Note:&lt;/b> For string values the &lt;em>number of bytes&lt;/em> needed to
    * represent the longest text UTF-8 string of the signal may differ from the
-   * number of <em>characters</em> in the string, as each UTF-8 character may
+   * number of &lt;em>characters&lt;/em> in the string, as each UTF-8 character may
    * take up 1, 2 or 3 bytes.
    *
-   * @return {number}  Size of a binary representation of the values of this signal. [0,&gt;.
+   * @return {number}  Size of a binary representation of the values of this signal. [0,&amp;gt;.
    */
   getSize()
   {
@@ -182,21 +210,21 @@ export class Signal
 
   /**
    * Specify the (maximum) size (number of bytes) of string values of this signal.
-   * <p>
-   * <b>Note:</b> For string values the <em>number of bytes</em> needed to
+   * &lt;p>
+   * &lt;b>Note:&lt;/b> For string values the &lt;em>number of bytes&lt;/em> needed to
    * represent the longest text UTF-8 string of the signal may differ from the
-   * number of <em>characters</em> in the string, as each UTF-8 character may
+   * number of &lt;em>characters&lt;/em> in the string, as each UTF-8 character may
    * take up 1, 2 or 3 bytes.
-   * <p>
-   * <b>Note:</b> Called by reader only.
+   * &lt;p>
+   * &lt;b>Note:&lt;/b> Called by reader only.
    *
-   * @param {number} size  Size to set. [0,&gt;.
-   * @throws TypeError  If size &lt; 0;
+   * @param {number} size  Size to set. [0,&amp;gt;.
+   * @throws TypeError  If size &amp;lt; 0;
    * @throws TypeError  If the method is being called for other than string signals.
    */
   setSize(size)
   {
-    if (size < 0)
+    if (size &lt; 0)
       throw new TypeError("Inavlid size: " + size);
 
     if (this.#valueType_ != "string")
@@ -208,13 +236,13 @@ export class Signal
   /**
    * Add a value to this signal.
    *
-   * @param {number} dimension  Dimension index. [0,nDimensions&gt;.
+   * @param {number} dimension  Dimension index. [0,nDimensions&amp;gt;.
    * @param {object} value      Value to add. Null to indicate absent.
    * @throws TypeError  If dimension is out of bounds.
    */
   addValue(dimension, value)
   {
-    if (dimension < 0 || dimension >= this.#values_.length)
+    if (dimension &lt; 0 || dimension >= this.#values_.length)
       throw new TypeError("Invalid dimension: " + dimension);
 
     this.#values_[dimension].push(value);
@@ -226,22 +254,22 @@ export class Signal
   /**
    * Set a specific value in this signal.
    *
-   * @param {number} index      Index of signal to set. [0&gt;. If index is beyond current maximum,
+   * @param {number} index      Index of signal to set. [0&amp;gt;. If index is beyond current maximum,
    *                            the signal is padded with nulls.
-   * @param {number} dimension  Dimension entry to set. [0,nDimensions&gt;.
+   * @param {number} dimension  Dimension entry to set. [0,nDimensions&amp;gt;.
    * @param {object} value      Value to set. Null for absent.
    */
   setValue(index, dimension, value)
   {
-    if (index < 0)
+    if (index &lt; 0)
       throw new TypeError("Invalid index: " + index);
 
-    if (dimension < 0 || dimension >= this.#values_.length)
+    if (dimension &lt; 0 || dimension >= this.#values_.length)
       throw new TypeError("Invalid dimension: " + dimension);
 
     // Pad with nulls if necessary
-    for (let i = this.getNValues() - 1; i < index; i++) {
-      for (let dim = 0; dim < this.getNDimensions(); dim++) {
+    for (let i = this.getNValues() - 1; i &lt; index; i++) {
+      for (let dim = 0; dim &lt; this.getNDimensions(); dim++) {
         addValue(dim, null);
       }
     }
@@ -250,7 +278,7 @@ export class Signal
     this.#values_[dimension][index] = value;
 
     // Extend text size if necessary
-    if (this.#valueType_ == "string" && value != null) {
+    if (this.#valueType_ == "string" &amp;&amp; value != null) {
       let s = value.toString();
       let size = TextEncoder().encode(s).length;
       if (size > this.#size_)
@@ -264,13 +292,13 @@ export class Signal
   /**
    * Return number of values in the speified dimension.
    *
-   * @param  {number} dimension  Dimension to get number of values of. [0,nDimensions&gt;.
+   * @param  {number} dimension  Dimension to get number of values of. [0,nDimensions&amp;gt;.
    *                             If dimension is undefined, 0 is assumed.
-   * @return {number}            Number of values in the specified dimension. [0,&gt;.
+   * @return {number}            Number of values in the specified dimension. [0,&amp;gt;.
    */
   getNValues(dimension)
   {
-    if (dimension < 0 || dimension >= this.#values_.length)
+    if (dimension &lt; 0 || dimension >= this.#values_.length)
       throw new TypeError("Invalid dimension: " + dimension);
 
     return this.#values_[dimension != null ? dimension : 0].length;
@@ -279,8 +307,8 @@ export class Signal
   /**
    * Return a specific value from the given dimension of this signal.
    *
-   * @param {number} index      Position index. [0,nValues&gt;.
-   * @param {number} dimension  Dimension index. [0,nDimensions&gt;, or undefined for 0.
+   * @param {number} index      Position index. [0,nValues&amp;gt;.
+   * @param {number} dimension  Dimension index. [0,nDimensions&amp;gt;, or undefined for 0.
    * @return {object}           The requested value. Null if absent.
    */
   getValue(index, dimension)
@@ -296,7 +324,7 @@ export class Signal
     let nDimensions = this.getNDimensions();
 
     this.#values_ = [];
-    for (let i = 0; i < nDimensions; i++)
+    for (let i = 0; i &lt; nDimensions; i++)
       this.#values_.push([]);
 
     if (this.#valueType_ == "string")
@@ -306,10 +334,10 @@ export class Signal
   }
 
   /**
-   * Return the range (i.e.&nbsp;the min and max value) of this signal.
+   * Return the range (i.e.&amp;nbsp;the min and max value) of this signal.
    * The returned array is never null. The two entries may
    * be null if min/max does not exist.
-   * <p>
+   * &lt;p>
    * If the signal is multi-dimensional, the range is reported
    * across all dimensions.
    *
@@ -323,10 +351,10 @@ export class Signal
       let maxValue = NaN;
 
       let nValues = this.getNValues();
-      for (let index = 0; index < this.getNValues(); index++) {
-        for (let dimension = 0; dimension < this.getNDimensions(); dimension++) {
+      for (let index = 0; index &lt; this.getNValues(); index++) {
+        for (let dimension = 0; dimension &lt; this.getNDimensions(); dimension++) {
           let value = Util.getAsNumber(this.getValue(index, dimension));
-          if (isNaN(minValue) || value < minValue)
+          if (isNaN(minValue) || value &lt; minValue)
             minValue = value;
           if (isNaN(maxValue) || value > maxValue)
             maxValue = value;
@@ -355,8 +383,8 @@ export class Signal
     s += "Value type....: " + this.#valueType_ + "\n";
     s += "Range.........: " + this.getRange() + "\n";
 
-    for (let index = 0; index < this.getNValues(); index++) {
-      for (let dimension = 0; dimension < this.getNDimensions(); dimension++)
+    for (let index = 0; index &lt; this.getNValues(); index++) {
+      for (let dimension = 0; dimension &lt; this.getNDimensions(); dimension++)
         s += this.#values_[dimension][index] + ", ";
       s += "\n";
     }
@@ -375,3 +403,26 @@ console.log(s.toString());
 
 
 
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Signal.html">Signal</a></li><li><a href="TimeSeries.html">TimeSeries</a></li><li><a href="TimeSeriesReader.html">TimeSeriesReader</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Jan 02 2025 22:33:12 GMT+0100 (sentraleuropeisk normaltid)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

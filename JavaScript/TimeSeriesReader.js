@@ -17,8 +17,17 @@ import fs from "fs"; // Node.js
  */
 export class TimeSeriesReader
 {
+  /**
+   * Read TimeSeries.JSON from the specified URL.
+   *
+   * @param {string} url  URL of content to read. Non-null.
+   * @return {array}      List of TimeSeries instances. Never null.
+   */
   static read(url)
   {
+    if (url == null)
+      throw new TypeError("url cannot be null");
+
     const data = fs.readFileSync(url, "utf8");
     const json = JSON.parse(data);
 

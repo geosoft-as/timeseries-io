@@ -4,6 +4,6 @@
   "author": "Jacob Dreyer <jacob.dreyer@geosoft.no> (https://geosoft.no)",
   "type": "module",
   "dependencies": {
-    "terser": "^5.37.0"
+    "rollup": "^4.29.1"
   }
 }

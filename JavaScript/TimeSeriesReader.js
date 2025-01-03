@@ -3,12 +3,12 @@
 import { Signal } from "./Signal.js";
 import { TimeSeries } from "./TimeSeries.js";
 
-import fs from "fs"; // Node.js
+//import fs from "fs"; // Node.js
 
 
 //import * as fs from "fs"; // Node.js
 
-//const fs = require("fs"); // Browser
+const fs = require("fs"); // Browser
 
 /**
  * Class for reading TimeSeries.JSON files.

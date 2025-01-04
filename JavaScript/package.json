@@ -2,8 +2,5 @@
   "name": "timeseries",
   "version": "1.0.0",
   "author": "Jacob Dreyer <jacob.dreyer@geosoft.no> (https://geosoft.no)",
-  "type": "module",
-  "dependencies": {
-    "rollup": "^4.29.1"
-  }
+  "type": "module"
 }

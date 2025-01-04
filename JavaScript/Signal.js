@@ -365,6 +365,7 @@ export class Signal
   }
 }
 
+/*
 let s = new Signal("pressure", "Pressure", "pressure", "psi", "float", 1);
 s.addValue(0, 100.1);
 s.addValue(0, 100.2);
@@ -372,6 +373,6 @@ s.addValue(0, 91.2);
 s.addValue(0, 191.2);
 
 console.log(s.toString());
-
+*/
 
 

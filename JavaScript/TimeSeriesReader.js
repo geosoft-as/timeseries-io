@@ -8,7 +8,7 @@ import { TimeSeries } from "./TimeSeries.js";
 
 //import * as fs from "fs"; // Node.js
 
-const fs = require("fs"); // Browser
+//const fs = require("fs"); // Browser
 
 /**
  * Class for reading TimeSeries.JSON files.
@@ -17,6 +17,15 @@ const fs = require("fs"); // Browser
  */
 export class TimeSeriesReader
 {
+  static async readJson(url)
+  {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Unable to access URL: " + url);
+    }
+    return await response.json();
+  }
+
   /**
    * Read TimeSeries.JSON from the specified URL.
    *
@@ -28,16 +37,16 @@ export class TimeSeriesReader
     if (url == null)
       throw new TypeError("url cannot be null");
 
-    const data = fs.readFileSync(url, "utf8");
-    const json = JSON.parse(data);
+    const json = readJson(url, "utf8");
+    const jsonArray = JSON.parse(json);
 
     let timeSeriesList = [];
 
-    for (let i = 0; i < json.length; i++) {
+    for (let i = 0; i < jsonArray.length; i++) {
       let timeSeries = new TimeSeries();
       timeSeriesList.push(timeSeries);
 
-      const ts = json[i];
+      const ts = jsonArray[i];
       for (let j = 0; j < ts.signals.length; j++) {
         let signal = Signal.fromJson(ts.signals[j]);
 

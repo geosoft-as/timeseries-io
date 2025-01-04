@@ -187,8 +187,8 @@ export class TimeSeries
 }
 
 
-/*
 
+/*
 let timeSignal = new Signal("time", "Time", "time", "s", "datetime", 1);
 let positionSignal = new Signal("position",  "Position", "latlong", "dega", "float", 2);
 

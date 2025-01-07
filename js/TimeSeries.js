@@ -142,7 +142,13 @@ export class TimeSeries
     if (signalName == null)
       throw new TypeError("signalName cannot be null");
 
-    return this.#signals_.forEach(signal => signal.getName() == signalName);
+    for (const signal of this.#signals_) {
+      if (signal.getName() == signalName)
+        return signal;
+    }
+
+    // Not found
+    return null;
   }
 
   /**
@@ -185,25 +191,3 @@ export class TimeSeries
     return TimeSeriesWriter.toString(this);
   }
 }
-
-
-
-/*
-let timeSignal = new Signal("time", "Time", "time", "s", "datetime", 1);
-let positionSignal = new Signal("position",  "Position", "latlong", "dega", "float", 2);
-
-let t = new TimeSeries();
-t.addSignal(timeSignal)
-t.addSignal(positionSignal);
-t.setProperty(WellKnownProperty.DESCRIPTION.key, "test");
-
-timeSignal.addValue(0, "12:03");
-timeSignal.addValue(0, "12:04");
-positionSignal.addValue(0, 10.0);
-positionSignal.addValue(1, 11.0);
-positionSignal.addValue(0, 20.0);
-positionSignal.addValue(1, 21.0);
-
-console.log(t.getProperty("TULL"));
-
-*/

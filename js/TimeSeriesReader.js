@@ -62,7 +62,7 @@ export class TimeSeriesReader
           let nDimensions = signal.getNDimensions();
           let value = row[signalNo];
           for (let dimension = 0; dimension < nDimensions; dimension++)
-            signal.addValue(dimension, nDimensions > 1 ? value[dimension] : value);
+            signal.addValue(nDimensions > 1 ? value[dimension] : value, dimension);
         }
       }
     }

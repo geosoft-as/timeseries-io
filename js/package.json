@@ -1,0 +1,7 @@
+{
+  "name": "timseries",
+  "version": "1.0.0",
+  "description": "JavaScript front-end to the TimeSeries.JSON format standard",
+  "author": "Jacob Dreyer",
+  "type": "module"
+}

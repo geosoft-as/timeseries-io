@@ -61,11 +61,16 @@ export class Signal
     if (name == null)
       throw new TypeError("name cannot be null");
 
+    if (!valueType)
+      valueType = "float";
+
+    if (!nDimensions)
+      nDimensions = 1;
+
     if (nDimensions < 0)
       throw new TypeError("Invalid nDimension: " + nDimensions);
 
-    if (valueType == null &&
-        valueType != "float" &&
+    if (valueType != "float" &&
         valueType != "integer" &&
         valueType != "boolean" &&
         valueType != "datetime" &&
@@ -208,12 +213,15 @@ export class Signal
   /**
    * Add a value to this signal.
    *
-   * @param {number} dimension  Dimension index. [0,nDimensions&gt;.
-   * @param {object} value      Value to add. Null to indicate absent.
+   * @param {object} value - Value to add. Null to indicate absent.
+   * @param {number} dimension - Dimension index. [0,nDimensions&gt; or undefined for 0.
    * @throws TypeError  If dimension is out of bounds.
    */
-  addValue(dimension, value)
+  addValue(value, dimension)
   {
+    if (!dimension)
+      dimension = 0;
+
     if (dimension < 0 || dimension >= this.#values_.length)
       throw new TypeError("Invalid dimension: " + dimension);
 
@@ -226,13 +234,16 @@ export class Signal
   /**
    * Set a specific value in this signal.
    *
-   * @param {number} index      Index of signal to set. [0&gt;. If index is beyond current maximum,
-   *                            the signal is padded with nulls.
-   * @param {number} dimension  Dimension entry to set. [0,nDimensions&gt;.
-   * @param {object} value      Value to set. Null for absent.
+   * @param {object} value - Value to set. Null for absent.
+   * @param {number} index - Index of signal to set. [0&gt;. If index is beyond current maximum,
+   *                         the signal is padded with nulls.
+   * @param {number} dimension  Dimension entry to set. [0,nDimensions&gt; or undefined for 0.
    */
-  setValue(index, dimension, value)
+  setValue(value, index, dimension)
   {
+    if (!dimension)
+      dimension = 0;
+
     if (index < 0)
       throw new TypeError("Invalid index: " + index);
 
@@ -264,8 +275,8 @@ export class Signal
   /**
    * Return number of values in the speified dimension.
    *
-   * @param  {number} dimension  Dimension to get number of values of. [0,nDimensions&gt;.
-   *                             If dimension is undefined, 0 is assumed.
+   * @param {number} dimension - Dimension to get number of values of. [0,nDimensions&gt;
+   *                             or undefined for 0.
    * @return {number}            Number of values in the specified dimension. [0,&gt;.
    */
   getNValues(dimension)
@@ -279,13 +290,22 @@ export class Signal
   /**
    * Return a specific value from the given dimension of this signal.
    *
-   * @param {number} index      Position index. [0,nValues&gt;.
-   * @param {number} dimension  Dimension index. [0,nDimensions&gt;, or undefined for 0.
-   * @return {object}           The requested value. Null if absent.
+   * @param {number} index - Position index. [0,nValues&gt;.
+   * @param {number} dimension - Dimension index. [0,nDimensions&gt;, or undefined for 0.
+   * @return {object}  The requested value. Null if absent.
    */
   getValue(index, dimension)
   {
-    return this.#values_[dimension != null ? dimension : 0][index];
+    if (!dimension)
+      dimension = 0;
+
+    if (dimension < 0 || dimension >= this.#values_.length)
+      throw new TypeError("Invalid dimension: " + dimension);
+
+    if (index < 0 || index >= this.#values_[dimension].length)
+      throw new TypeError("Invalid index: " + index);
+
+    return this.#values_[dimension][index];
   }
 
   /**
@@ -364,3 +384,4 @@ export class Signal
     return s;
   }
 }
+

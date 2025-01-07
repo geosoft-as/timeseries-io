@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>TimeSeriesReader - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Signal.html">Signal</a><ul class='methods'><li data-type='method'><a href="Signal.html#addValue">addValue</a></li><li data-type='method'><a href="Signal.html#clear">clear</a></li><li data-type='method'><a href="Signal.html#getDescription">getDescription</a></li><li data-type='method'><a href="Signal.html#getNDimensions">getNDimensions</a></li><li data-type='method'><a href="Signal.html#getNValues">getNValues</a></li><li data-type='method'><a href="Signal.html#getName">getName</a></li><li data-type='method'><a href="Signal.html#getQuantity">getQuantity</a></li><li data-type='method'><a href="Signal.html#getRange">getRange</a></li><li data-type='method'><a href="Signal.html#getSize">getSize</a></li><li data-type='method'><a href="Signal.html#getUnit">getUnit</a></li><li data-type='method'><a href="Signal.html#getValue">getValue</a></li><li data-type='method'><a href="Signal.html#getValueType">getValueType</a></li><li data-type='method'><a href="Signal.html#setSize">setSize</a></li><li data-type='method'><a href="Signal.html#setValue">setValue</a></li><li data-type='method'><a href="Signal.html#toString">toString</a></li><li data-type='method'><a href="Signal.html#.fromJson">fromJson</a></li></ul></li><li><a href="TimeSeries.html">TimeSeries</a><ul class='methods'><li data-type='method'><a href="TimeSeries.html#addSignal">addSignal</a></li><li data-type='method'><a href="TimeSeries.html#clearSignals">clearSignals</a></li><li data-type='method'><a href="TimeSeries.html#findSignal">findSignal</a></li><li data-type='method'><a href="TimeSeries.html#getHeader">getHeader</a></li><li data-type='method'><a href="TimeSeries.html#getNSignals">getNSignals</a></li><li data-type='method'><a href="TimeSeries.html#getNValues">getNValues</a></li><li data-type='method'><a href="TimeSeries.html#getProperty">getProperty</a></li><li data-type='method'><a href="TimeSeries.html#getSignal">getSignal</a></li><li data-type='method'><a href="TimeSeries.html#getSignals">getSignals</a></li><li data-type='method'><a href="TimeSeries.html#hasSignalData">hasSignalData</a></li><li data-type='method'><a href="TimeSeries.html#setProperty">setProperty</a></li><li data-type='method'><a href="TimeSeries.html#toString">toString</a></li></ul></li><li><a href="TimeSeriesReader.html">TimeSeriesReader</a><ul class='methods'><li data-type='method'><a href="TimeSeriesReader.html#.read">read</a></li></ul></li><li><a href="TimeSeriesWriter.html">TimeSeriesWriter</a><ul class='methods'><li data-type='method'><a href="TimeSeriesWriter.html#.toJsonArray">toJsonArray</a></li><li data-type='method'><a href="TimeSeriesWriter.html#.toJsonObject">toJsonObject</a></li><li data-type='method'><a href="TimeSeriesWriter.html#.toString">toString</a></li></ul></li><li><a href="Util.html">Util</a><ul class='methods'><li data-type='method'><a href="Util.html#.getAsNumber">getAsNumber</a></li><li data-type='method'><a href="Util.html#.getAsType">getAsType</a></li><li data-type='method'><a href="Util.html#.getNumberAsType">getNumberAsType</a></li></ul></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">TimeSeriesReader</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        
+            TimeSeriesReader
+        
+        </h2>
+        
+            <div class="class-description usertext">Class for reading TimeSeries.JSON files.</div>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="TimeSeriesReader"><span class="type-signature"></span>new TimeSeriesReader<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TimeSeriesReader.js.html">TimeSeriesReader.js</a>, <a href="TimeSeriesReader.js.html#line18">line 18</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>&lt;a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer&lt;/a></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id=".read"><span class="type-signature type-signature-static">(static) </span>read<span class="signature">(url)</span><span class="type-signature"> &rarr; {array}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Read TimeSeries.JSON from the specified URL.</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="TimeSeriesReader.js.html">TimeSeriesReader.js</a>, <a href="TimeSeriesReader.js.html#line35">line 35</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="h5-parameters">Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>url</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">URL of content to read. Non-null.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    List of TimeSeries instances. Never null.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.4</a> on Tue Jan 07 2025 14:18:10 GMT+0100 (Central European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

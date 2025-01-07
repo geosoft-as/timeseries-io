@@ -1,7 +1,16 @@
 {
   "name": "timseries",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "JavaScript front-end to the TimeSeries.JSON format standard",
-  "author": "Jacob Dreyer",
-  "type": "module"
+  "keywords": ["time series", "GeoSoft", "TimeSeries.JSON"],
+  "author": "Jacob Dreyer <jacob.dreyer@geosoft.no> (https://geosoft.no)",
+  "homepage": "https://github.com/geosoft-as/timeseries",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geosoft-as/timeseries"
+  },
+  "main": "./index.js",
+  "type": "module",
+  "private": true
 }

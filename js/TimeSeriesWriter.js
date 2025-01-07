@@ -2,10 +2,20 @@
 
 import { Signal } from "./Signal.js";
 import { TimeSeries } from "./TimeSeries.js";
-import { TimeSeriesReader } from "./TimeSeriesReader.js";
 
+/**
+ * Class for converting TimeSeries instances to JSON strings.
+ *
+ * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
+ */
 export class TimeSeriesWriter
 {
+  /**
+   * Create a JSON array from the specified list of TimeSeries instances.
+   *
+   * @param {array} - Array of TimeSeries instances. Non-null.
+   * @return {array}  A JSON array of the instances. Never null.
+   */
   static toJsonArray(timeSeriesList)
   {
     if (!Array.isArray(timeSeriesList))
@@ -18,8 +28,17 @@ export class TimeSeriesWriter
     return timeSeriesArray;
   }
 
+  /**
+   * Create a JSON object from the specified TimeSeries instances.
+   *
+   * @param {TimeSeries} - TimeSeries instance to convert. Non-null.
+   * @return {array}  A JSON array of the instances. Never null.
+   */
   static toJsonObject(timeSeries)
   {
+    if (timeSeries == null)
+      throw new TypeError("timeSeries cannot be null");
+
     // Time series JavaScript object
     let ts = {
       header: timeSeries.getHeader(),
@@ -64,6 +83,12 @@ export class TimeSeriesWriter
     return ts;
   }
 
+  /**
+   * Create a string representation of the argument, being either a
+   * TimeSeries instance or an array of such.
+   *
+   * @return  A TimeSeries.JSON string representation of the given argument. Never null.
+   */
   static toString(timeSeries)
   {
     let timeSeriesList = Array.isArray(timeSeries) ? timeSeries : [timeSeries];
@@ -71,28 +96,3 @@ export class TimeSeriesWriter
     return JSON.stringify(jsonArray, null, 2);
   }
 }
-
-/*
-let timeSignal = new Signal("time", "Time", "time", "s", "datetime", 1);
-let positionSignal = new Signal("position",  "Position", "latlong", "dega", "float", 2);
-
-let t = new TimeSeries();
-t.addSignal(timeSignal)
-t.addSignal(positionSignal);
-
-timeSignal.addValue(0, "12:03");
-timeSignal.addValue(0, "12:04");
-positionSignal.addValue(0, 10.0);
-positionSignal.addValue(1, 11.0);
-positionSignal.addValue(0, 20.0);
-positionSignal.addValue(1, 21.0);
-
-let timeSeriesList = [];
-timeSeriesList.push(t);
-
-
-let timeSeriesWriter = new TimeSeriesWriter();
-console.log(timeSeriesWriter.toString(t));
-
-
-*/

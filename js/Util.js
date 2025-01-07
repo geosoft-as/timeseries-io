@@ -1,7 +1,18 @@
 "use strict"
 
+/**
+ * Time series common utilities.
+ *
+ * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
+ */
 export class Util
 {
+  /**
+   * Return the specified argument as a number if possible.
+   *
+   * @param value - Primitive or object of any type. May be null, in case NaN will be returned.
+   * @return  The specified value as a number, or null if no conversion is possible.
+   */
   static getAsNumber(value)
   {
     // No-value
@@ -32,6 +43,14 @@ export class Util
     return null;
   }
 
+  /**
+   * Return the specified number as an object of the given type.
+   *
+   * @param {number} value - Number to convert.
+   * @param {string} valueType - A valid TimeSeries.JSON value type. Non-null.
+   * @return  The specified number converted to the given value type, or null if no conversion is possible.
+   * @throws TypeError  If valueType is null.
+   */
   static getNumberAsType(value, valueType)
   {
     if (valueType == null)
@@ -64,6 +83,14 @@ export class Util
     return null;
   }
 
+  /**
+   * Return the specified value as an object of the given type.
+   *
+   * @param {number} value - Value to convert. May be null, in case null will be returned.
+   * @param {string} valueType - A valid TimeSeries.JSON value type. Non-null.
+   * @return  The specified value converted to the given value type, or null if no conversion is possible.
+   * @throws TypeError  If valueType is null.
+   */
   static getAsType(value, valueType)
   {
     if (valueType == null)
@@ -81,5 +108,3 @@ export class Util
     return this.getNumberAsType(this.getAsNumber(value), valueType);
   }
 }
-
-

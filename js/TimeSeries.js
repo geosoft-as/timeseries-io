@@ -106,14 +106,14 @@ export class TimeSeries
   }
 
   /**
-   * Return the signals of this time series. The first signal
+   * Return (a copy of) the signals of this time series. The first signal
    * is by convention always the index, typically the time values.
    *
    * @return {array}  The signals of this time series. Never null.
    */
   getSignals()
   {
-    return this.#signals_;
+    return [...this.#signals_]; // Shallow copy
   }
 
   /**
@@ -133,8 +133,8 @@ export class TimeSeries
   /**
    * Find signal of the given name.
    *
-   * @param {string} signalName  Name of signal to find. Non-null.
-   * @return {Signal}            Requested signal, or null if not found.
+   * @param {string} signalName - Name of signal to find. Non-null.
+   * @return {Signal}  Requested signal, or null if not found.
    * @throws TypeError  If signalName is null.
    */
   findSignal(signalName)
@@ -152,7 +152,7 @@ export class TimeSeries
   }
 
   /**
-   * Return the number of curves in this log.
+   * Return the number of signales in this instance.
    *
    * @return  Number of curves in this log. [0,&gt;.
    */
@@ -184,7 +184,7 @@ export class TimeSeries
   /**
    * Return a string representation of this instance.
    *
-   * @return {string}  A stgring representation of this instance.
+   * @return {string}  A string representation of this instance. Never null.
    */
   toString()
   {

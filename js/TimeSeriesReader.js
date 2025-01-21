@@ -4,10 +4,7 @@ import { Signal } from "./Signal.js";
 import { TimeSeries } from "./TimeSeries.js";
 
 //import fs from "fs"; // Node.js
-
-
 //import * as fs from "fs"; // Node.js
-
 //const fs = require("fs"); // Browser
 
 /**
@@ -27,17 +24,14 @@ export class TimeSeriesReader
   }
 
   /**
-   * Read TimeSeries.JSON from the specified URL.
+   * Convert the specified JSON string containing TimeSeries.JSON data
+   * into a list of TimeSeries instances.
    *
-   * @param {string} url  URL of content to read. Non-null.
-   * @return {array}      List of TimeSeries instances. Never null.
+   * @param {string} json  JSON string with TimeSeries.JSON instance.
+   * @return {TimeSeries[]}  List of TimeSeries instances.
    */
-  static read(url)
+  static readString(json)
   {
-    if (url == null)
-      throw new TypeError("url cannot be null");
-
-    const json = readJson(url, "utf8");
     const jsonArray = JSON.parse(json);
 
     let timeSeriesList = [];
@@ -69,5 +63,19 @@ export class TimeSeriesReader
 
     return timeSeriesList;
   }
-}
 
+  /**
+   * Read TimeSeries.JSON from the specified URL.
+   *
+   * @param {string} url     URL of content to read. Non-null.
+   * @return {TimeSeries[]}  List of TimeSeries instances. Never null.
+   */
+  static readUrl(url)
+  {
+    if (url == null)
+      throw new TypeError("url cannot be null");
+
+    const json = readJson(url, "utf8");
+    return readString(json);
+  }
+}

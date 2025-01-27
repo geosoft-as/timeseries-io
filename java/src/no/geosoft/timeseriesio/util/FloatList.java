@@ -1,4 +1,4 @@
-package no.geosoft.timeseries.util;
+package no.geosoft.timeseriesio.util;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,20 +9,20 @@ import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 /**
- * A List implementation wrapper for a native double array.
+ * A List implementation wrapping a native float array.
  * <p>
  * Useful if the array becomes <em>very</em> large as this is both
- * a lot faster and requires less storage than List&lt;Double&gt;.
+ * a lot faster and requires less storage than List&lt;Float&gt;.
  * <p>
- * <b>Speed:</b> DoubleList is about 5x faster than List&lt;Double&gt;<br>
- * <b>Memory:</b> double is 8 bytes while Double is 24 bytes: 3x.
+ * <b>Speed:</b> FloatList is about 4x faster than List&lt;Float&gt;<br>
+ * <b>Memory:</b> float is 4 bytes while Float is 16 bytes: 4x.
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class DoubleList implements List<Double>
+public final class FloatList implements List<Float>
 {
   /** Back-end array. */
-  private double[] array_;
+  private float[] array_;
 
   /** Current size. [0,&gt;. */
   private int size_ = 0;
@@ -35,23 +35,23 @@ public final class DoubleList implements List<Double>
   private transient int stateId_;
 
   /**
-   * Create a new Double list with the specified capacity.
+   * Create a new Float list with the specified capacity.
    *
    * @param capacity  Initial capacity. [1,&gt;.
    * @throws IllegalArgumentException  If capacity is &lt;1.
    */
-  public DoubleList(int capacity)
+  public FloatList(int capacity)
   {
     if (capacity < 1)
       throw new IllegalArgumentException("Invalid capacity: " + capacity);
 
-    array_ = new double[capacity];
+    array_ = new float[capacity];
   }
 
   /**
-   * Create a new Double list with default capacity.
+   * Create a new Float list with default capacity.
    */
-  public DoubleList()
+  public FloatList()
   {
     // A large initial capacity to indicate that this class
     // is mainly used with large collections.
@@ -59,7 +59,7 @@ public final class DoubleList implements List<Double>
   }
 
   /**
-   * Ensure that the backing list has enough capacity for the
+   * Ensure that the backing list as enough capacity for the
    * specified number of elements.
    *
    * @param size  Number of elements. [0,&gt;.
@@ -79,17 +79,17 @@ public final class DoubleList implements List<Double>
 
   /** {@inheritDoc} */
   @Override
-  public boolean add(Double value)
-  {
-    stateId_++;
+  public boolean add(Float value)
+
+    {stateId_++;
     ensureCapacity(size_ + 1);
-    array_[size_++] = value != null ? value : Double.NaN;
+    array_[size_++] = value != null ? value : Float.NaN;
     return true;
   }
 
   /** {@inheritDoc} */
   @Override
-  public void add(int index, Double value)
+  public void add(int index, Float value)
   {
     if (index < 0 || index > size_)
       throw new IndexOutOfBoundsException("" + index);
@@ -98,14 +98,14 @@ public final class DoubleList implements List<Double>
     ensureCapacity(size_ + 1);
     System.arraycopy(array_, index, array_, index + 1, size_ - index);
 
-    array_[index] = value != null ? value : Double.NaN;
+    array_[index] = value != null ? value : Float.NaN;
 
     size_++;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean addAll(Collection<? extends Double> values)
+  public boolean addAll(Collection<? extends Float> values)
   {
     if (values == null)
       throw new IllegalArgumentException("values cannot be null");
@@ -115,15 +115,15 @@ public final class DoubleList implements List<Double>
 
     stateId_++;
     ensureCapacity(size_ + values.size());
-    for (Double value : values)
-      array_[size_++] = value != null ? value : Double.NaN;
+    for (Float value : values)
+      array_[size_++] = value != null ? value : Float.NaN;
 
     return true;
   }
 
   /** {@inheritDoc} */
   @Override
-  public boolean addAll(int index, Collection<? extends Double> values)
+  public boolean addAll(int index, Collection<? extends Float> values)
   {
     if (index < 0 || index > size_)
       throw new IndexOutOfBoundsException("" + index);
@@ -143,8 +143,8 @@ public final class DoubleList implements List<Double>
     System.arraycopy(array_, index, array_, index + size, size_ - index);
 
     int i = index;
-    for (Double value : values)
-      array_[i++] = value != null ? value : Double.NaN;
+    for (Float value : values)
+      array_[i++] = value != null ? value : Float.NaN;
 
     size_ += size;
 
@@ -182,30 +182,30 @@ public final class DoubleList implements List<Double>
 
   /** {@inheritDoc} */
   @Override
-  public Double get(int index)
+  public Float get(int index)
   {
-    if (index < 0 || index >= size_)
+    if (index < 0 || index > size_)
       throw new IndexOutOfBoundsException("" + index);
 
-    double v = array_[index];
-    return Double.isNaN(v) ? null : v;
+    float v = array_[index];
+    return Float.isNaN(v) ? null : v;
   }
 
   /** {@inheritDoc} */
   @Override
   public int indexOf(Object value)
   {
-    if (value != null && !(value instanceof Double))
+    if (value != null && !(value instanceof Float))
       return -1;
 
     if (value == null) {
       for (int index = 0; index < size_; index++)
-        if (Double.isNaN(array_[index]))
+        if (Float.isNaN(array_[index]))
           return index;
     }
 
     else {
-      double v = (Double) value;
+      float v = (Float) value;
 
       for (int index = 0; index < size_; index++)
         if (v == array_[index])
@@ -220,17 +220,17 @@ public final class DoubleList implements List<Double>
   @Override
   public int lastIndexOf(Object value)
   {
-    if (value != null && !(value instanceof Double))
+    if (value != null && !(value instanceof Float))
       return -1;
 
     if (value == null) {
       for (int index = size_ - 1; index >= 0; index--)
-        if (Double.isNaN(array_[index]))
+        if (Float.isNaN(array_[index]))
           return index;
     }
 
     else {
-      double v = (Double) value;
+      float v = (Float) value;
       for (int index = size_ - 1; index >= 0; index--)
         if (v == array_[index])
           return index;
@@ -256,38 +256,38 @@ public final class DoubleList implements List<Double>
 
   /** {@inheritDoc} */
   @Override
-  public ListIterator<Double> listIterator()
+  public ListIterator<Float> listIterator()
   {
-    return new DoubleListIterator(0);
+    return new FloatListIterator(0);
   }
 
   /** {@inheritDoc} */
   @Override
-  public ListIterator<Double> listIterator(int index)
+  public ListIterator<Float> listIterator(int index)
   {
     if (index < 0 || index >= size_)
       throw new IndexOutOfBoundsException("" + index);
 
-    return new DoubleListIterator(index);
+    return new FloatListIterator(index);
   }
 
   /** {@inheritDoc} */
   @Override
-  public Iterator<Double> iterator()
+  public Iterator<Float> iterator()
   {
     return listIterator();
   }
 
   /** {@inheritDoc} */
   @Override
-  public Double remove(int index)
+  public Float remove(int index)
   {
     if (index < 0 || index >= size_)
       throw new IndexOutOfBoundsException("" + index);
 
     stateId_++;
 
-    double value = array_[index];
+    float value = array_[index];
 
     int nMoved = size_ - index - 1;
     if (nMoved > 0)
@@ -295,7 +295,7 @@ public final class DoubleList implements List<Double>
 
     size_--;
 
-    return !Double.isNaN(value) ? value : null;
+    return !Float.isNaN(value) ? value : null;
   }
 
   /** {@inheritDoc} */
@@ -327,22 +327,22 @@ public final class DoubleList implements List<Double>
 
   /** {@inheritDoc} */
   @Override
-  public Double set(int index, Double value)
+  public Float set(int index, Float value)
   {
     if (index < 0 || index >= size_)
       throw new IndexOutOfBoundsException("" + index);
 
-    double oldValue = array_[index];
-    double newValue = value != null ? value : Double.NaN;
+    float oldValue = array_[index];
+    float newValue = value != null ? value : Float.NaN;
 
     array_[index] = newValue;
 
-    return !Double.isNaN(oldValue) ? oldValue : null;
+    return !Float.isNaN(oldValue) ? oldValue : null;
   }
 
   /** {@inheritDoc} */
   @Override
-  public List<Double> subList(int fromIndex, int toIndex)
+  public List<Float> subList(int fromIndex, int toINdex)
   {
     throw new UnsupportedOperationException("Not supported. Use java.util.ArrayList instead");
   }
@@ -353,8 +353,8 @@ public final class DoubleList implements List<Double>
   {
     Object[] array = new Object[size_];
     for (int i = 0; i < size_; i++) {
-      double value = array_[i];
-      array[i] = !Double.isNaN(value) ? value : null;
+      float value = array_[i];
+      array[i] = !Float.isNaN(value) ? value : null;
     }
 
     return array;
@@ -362,7 +362,7 @@ public final class DoubleList implements List<Double>
 
   /** {@inheritDoc} */
   @Override
-  public <Double> Double[] toArray(Double[] array)
+  public <Float> Float[] toArray(Float[] array)
   {
     throw new UnsupportedOperationException("Use toArray() instead");
   }
@@ -384,11 +384,11 @@ public final class DoubleList implements List<Double>
     if (!(object instanceof List))
       return false;
 
-    ListIterator<Double> e1 = listIterator();
+    ListIterator<Float> e1 = listIterator();
     ListIterator<?> e2 = ((List) object).listIterator();
 
     while (e1.hasNext() && e2.hasNext()) {
-      Double o1 = e1.next();
+      Float o1 = e1.next();
       Object o2 = e2.next();
 
       if (!(o1 == null ? o2 == null : o1.equals(o2)))
@@ -413,7 +413,7 @@ public final class DoubleList implements List<Double>
   public String toString()
   {
     StringBuilder s = new StringBuilder();
-    s.append("DoubleList(" + size_ + "/" + array_.length + ") = [");
+    s.append("FloatList(" + size_ + "/" + array_.length + ") = [");
     for (int i = 0; i < 5; i++) {
       if (i == size_)
         break;
@@ -433,11 +433,11 @@ public final class DoubleList implements List<Double>
   }
 
   /**
-   * A Double list iterator.
+   * A Float list iterator.
    *
    * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
    */
-  private class DoubleListIterator implements ListIterator<Double>
+  private class FloatListIterator implements ListIterator<Float>
   {
     /** Index of next element to return. */
     private int cursor_;
@@ -458,7 +458,7 @@ public final class DoubleList implements List<Double>
      *
      * @param index  Start index. [0,&gt;.
      */
-    private DoubleListIterator(int index)
+    private FloatListIterator(int index)
     {
       assert index >= 0 : "Invalid index: " + index;
       cursor_ = index;
@@ -494,7 +494,7 @@ public final class DoubleList implements List<Double>
 
     /** {@inheritDoc} */
     @Override
-    public Double next()
+    public Float next()
     {
       // Check that the state (i.e. structure) of the list has
       // not been changed during the operation of the iterator
@@ -512,13 +512,13 @@ public final class DoubleList implements List<Double>
       cursor_ = index + 1;
       lastIndex_ = index;
 
-      double value = array_[index];
-      return !Double.isNaN(value) ? value : null;
+      float value = array_[index];
+      return !Float.isNaN(value) ? value : null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Double previous()
+    public Float previous()
     {
       // Check that the state (i.e. structure) of the list has
       // not been changed during the operation of the iterator
@@ -535,13 +535,13 @@ public final class DoubleList implements List<Double>
       cursor_ = index;
       lastIndex_ = index;
 
-      double value = array_[index];
-      return !Double.isNaN(value) ? value : null;
+      float value = array_[index];
+      return !Float.isNaN(value) ? value : null;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void set(Double value)
+    public void set(Float value)
     {
       if (lastIndex_ == -1)
         throw new IllegalStateException();
@@ -552,7 +552,7 @@ public final class DoubleList implements List<Double>
         throw new ConcurrentModificationException();
 
       try {
-        DoubleList.this.set(lastIndex_, value);
+        FloatList.this.set(lastIndex_, value);
       }
       catch (IndexOutOfBoundsException exception) {
         throw new ConcurrentModificationException();
@@ -561,7 +561,7 @@ public final class DoubleList implements List<Double>
 
     /** {@inheritDoc} */
     @Override
-    public void add(Double value)
+    public void add(Float value)
     {
       // Check that the state (i.e. structure) of the list has
       // not been changed during the operation of the iterator
@@ -570,7 +570,7 @@ public final class DoubleList implements List<Double>
 
       try {
         int index = cursor_;
-        DoubleList.this.add(index, value);
+        FloatList.this.add(index, value);
         cursor_ = index + 1;
         lastIndex_ = -1;
 
@@ -595,7 +595,7 @@ public final class DoubleList implements List<Double>
         throw new ConcurrentModificationException();
 
       try {
-        DoubleList.this.remove(lastIndex_);
+        FloatList.this.remove(lastIndex_);
         cursor_ = lastIndex_;
         lastIndex_ = -1;
 

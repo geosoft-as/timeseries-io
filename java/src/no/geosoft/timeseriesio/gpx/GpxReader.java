@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.gpx;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import no.geosoft.timeseries.util.XmlUtil;
+import no.geosoft.timeseriesio.util.XmlUtil;
 
 /**
  * Reader for reading GPX files into TimeSeries.JSON.
@@ -168,10 +168,10 @@ public final class GpxReader
    * @return  List of time series instances. Never null.
    * @throws IOException  If the reading operation fails for some reason.
    */
-  public List<TimeSeries> read()
+  public Gpx read()
     throws IOException
   {
-    List<TimeSeries> timeSeriesList = new ArrayList<>();
+    Gpx gpx = new Gpx();
 
     InputStream stream = inputStream_;
     if (file_ != null) {
@@ -195,20 +195,8 @@ public final class GpxReader
 
       List<Element> trackElements = XmlUtil.findChildren(root, "trk");
       for (Element trackElement : trackElements) {
-        TimeSeries timeSeries = new TimeSeries();
-        timeSeriesList.add(timeSeries);
-
-        Signal timeSignal = new Signal("time", null, "time", "s",  Date.class, 1);
-        timeSeries.addSignal(timeSignal);
-
-        Signal latitudeSignal = new Signal("latitude", null, "angle", "degA", Double.class, 1);
-        timeSeries.addSignal(latitudeSignal);
-
-        Signal longitudeSignal = new Signal("longitude", null, "angle", "degA", Double.class, 1);
-        timeSeries.addSignal(longitudeSignal);
-
-        Signal elevationSignal = new Signal("elevation", null, "length", "m", Double.class, 1);
-        timeSeries.addSignal(elevationSignal);
+        String name = XmlUtil.getChildValue(trackElement, "name", (String) null);
+        Track track = new Track(name);
 
         int index = 0;
 
@@ -222,6 +210,8 @@ public final class GpxReader
             Double elevation = XmlUtil.getChildValue(trackPointElement, "ele", (Double) null);
             Date time = XmlUtil.getChildValue(trackPointElement, "time", (Date) null);
 
+            TrackPoint trackPoint = new TrackPoint(time, latitude, longitude, elevation);
+
             //
             // Extensions (like Garmin etc.)
             //
@@ -231,36 +221,19 @@ public final class GpxReader
               // Heart rate
               Element heartRateElement = XmlUtil.findChild(extensionElement, "gpxtpx:hr");
               if (heartRateElement != null) {
-                Signal heartRateSignal = timeSeries.findSignal("heartRate");
-                if (heartRateSignal == null) {
-                  heartRateSignal = new Signal("heartRate", null, "frequency", "1/min", Double.class, 1);
-                  timeSeries.addSignal(heartRateSignal);
-                }
-
                 Double heartRate = XmlUtil.getValue(heartRateElement, (Double) null);
-                heartRateSignal.setValue(index, heartRate);
+                trackPoint.setHeartRate(heartRate);
               }
 
               // Cadence
               Element cadenceElement = XmlUtil.findChild(extensionElement, "gpxtpx:cad");
               if (cadenceElement != null) {
-                Signal cadenceSignal = timeSeries.findSignal("cadence");
-                if (cadenceSignal == null) {
-                  cadenceSignal = new Signal("cadence", null, "frequency", "1/min", Double.class, 1);
-                  timeSeries.addSignal(cadenceSignal);
-                }
-
                 Double cadence = XmlUtil.getValue(cadenceElement, (Double) null);
-                cadenceSignal.setValue(index, cadence);
+                trackPoint.setCadence(cadence);
               }
             }
 
-            timeSignal.addValue(time);
-            latitudeSignal.addValue(latitude);
-            longitudeSignal.addValue(longitude);
-            elevationSignal.addValue(elevation);
-
-            index++;
+            track.addTrackPoint(trackPoint);
           }
         }
       }
@@ -278,7 +251,7 @@ public final class GpxReader
         stream.close();
     }
 
-    return timeSeriesList;
+    return gpx;
   }
 
   /**
@@ -291,14 +264,12 @@ public final class GpxReader
     try {
       GpxReader gpxReader = new GpxReader(new File("C:/Users/jd/logdata/timeseries/Gramstad.gpx"));
 
-      List<TimeSeries> timeSeriesList = gpxReader.read();
-      TimeSeries timeSeries = timeSeriesList.get(0);
+      Gpx gpx = gpxReader.read();
+      System.out.println(gpx);
 
-      System.out.println(timeSeries);
-
-      File file = new File("C:/Users/jd/logdata/timeseries/Gramstad.json");
-      TimeSeriesWriter writer = new TimeSeriesWriter(file);
-      writer.write(timeSeries);
+      File file = new File("C:/Users/jd/logdata/timeseries/Gramstad.gpx");
+      GpxWriter writer = new GpxWriter(file);
+      writer.write(gpx);
       writer.close();
     }
     catch (Exception exception) {

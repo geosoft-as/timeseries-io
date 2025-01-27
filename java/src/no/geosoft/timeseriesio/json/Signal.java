@@ -1,10 +1,11 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-import no.geosoft.timeseries.util.DataArray;
-import no.geosoft.timeseries.util.Util;
+import no.geosoft.timeseriesio.util.DataArray;
+import no.geosoft.timeseriesio.util.Util;
+import no.geosoft.timeseriesio.util.Statistics;
 
 /**
  * Model a time series signal as it is defined by the TimeSeries.JSON format.
@@ -468,7 +469,7 @@ public final class Signal
     Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
     s2.addValue(100.0);
 
-    TimeSeries t = new TimeSeries();
+    JsonTimeSeries t = new JsonTimeSeries();
     t.addSignal(s1);
     t.addSignal(s2);
 

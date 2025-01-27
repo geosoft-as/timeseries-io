@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
@@ -27,11 +27,11 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 
-import no.geosoft.timeseries.util.Formatter;
-import no.geosoft.timeseries.util.ISO8601DateParser;
-import no.geosoft.timeseries.util.Indentation;
-import no.geosoft.timeseries.util.JsonUtil;
-import no.geosoft.timeseries.util.Util;
+import no.geosoft.timeseriesio.util.Formatter;
+import no.geosoft.timeseriesio.util.ISO8601DateParser;
+import no.geosoft.timeseriesio.util.Indentation;
+import no.geosoft.timeseriesio.util.JsonUtil;
+import no.geosoft.timeseriesio.util.Util;
 
 /**
  * Class for writing TimeSeries.JSON entries to disk.
@@ -39,7 +39,7 @@ import no.geosoft.timeseries.util.Util;
  * Typical usage:
  * <blockquote>
  *   <pre>
- *   TimeSeriesWriter writer = new TimeSeriesWriter(new File("path/to/file.json"), true, 2);
+ *   JsonTimeSeriesWriter writer = new JsonTimeSeriesWriter(new File("path/to/file.json"), true, 2);
  *   writer.write(timeSeries);
  *   writer.close();
  *   </pre>
@@ -50,7 +50,7 @@ import no.geosoft.timeseries.util.Util;
  * instance written, like:
  * <blockquote>
  *   <pre>
- *   TimeSeriesWriter writer = new TimeSeriesWriter(new File("path/to/file.json"), true, 2);
+ *   JsonTimeSeriesWriter writer = new JsonTimeSeriesWriter(new File("path/to/file.json"), true, 2);
  *   writer.write(timeSeries);
  *   writer.append(timeSeries);
  *   writer.append(timeSeries);
@@ -68,11 +68,11 @@ import no.geosoft.timeseries.util.Util;
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class TimeSeriesWriter
+public final class JsonTimeSeriesWriter
   implements Closeable
 {
   /** The logger instance. */
-  private static final Logger logger_ = Logger.getLogger(TimeSeriesWriter.class.getName());
+  private static final Logger logger_ = Logger.getLogger(JsonTimeSeriesWriter.class.getName());
 
   /** Platform independent new-line string. */
   private static String NEWLINE = System.getProperty("line.separator");
@@ -117,7 +117,7 @@ public final class TimeSeriesWriter
    *                      If isPretty is false, this setting has no effect.
    * @throws IllegalArgumentException  If outputStream is null or indentation is out of bounds.
    */
-  public TimeSeriesWriter(OutputStream outputStream, boolean isPretty, int indentation)
+  public JsonTimeSeriesWriter(OutputStream outputStream, boolean isPretty, int indentation)
   {
     if (outputStream == null)
       throw new IllegalArgumentException("outputStream cannot be null");
@@ -143,7 +143,7 @@ public final class TimeSeriesWriter
    *                     If isPretty is false, this setting has no effect.
    * @throws IllegalArgumentException  If file is null or indentation is out of bounds.
    */
-  public TimeSeriesWriter(File file, boolean isPretty, int indentation)
+  public JsonTimeSeriesWriter(File file, boolean isPretty, int indentation)
   {
     if (file == null)
       throw new IllegalArgumentException("file cannot be null");
@@ -166,7 +166,7 @@ public final class TimeSeriesWriter
    * @param file  Disk file to write. Non-null.
    * @throws IllegalArgumentException  If file is null.
    */
-  public TimeSeriesWriter(File file)
+  public JsonTimeSeriesWriter(File file)
   {
     this(file, true, 2);
   }
@@ -404,7 +404,7 @@ public final class TimeSeriesWriter
    * @param indentation  The current indentation level. Non-null.
    * @param timeSeries   The time series of the header. Non-null.
    */
-  private void writeHeaderObject(JsonObject header, Indentation indentation, TimeSeries timeSeries)
+  private void writeHeaderObject(JsonObject header, Indentation indentation, JsonTimeSeries timeSeries)
     throws IOException
   {
     assert header != null : "header cannot be null";
@@ -462,7 +462,7 @@ public final class TimeSeriesWriter
    * @param timeSeries  Time series to write. Non-null.
    * @param file        File to write to. Non-null.
    */
-  private void writeDataAsBinary(TimeSeries timeSeries, File file)
+  private void writeDataAsBinary(JsonTimeSeries timeSeries, File file)
     throws IOException
   {
     FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -540,7 +540,7 @@ public final class TimeSeriesWriter
    * @param timeSeries    Time series of data to write. Non-null.
    * @throws IOException  If the write operation fails for some reason.
    */
-  private void writeDataAsText(TimeSeries timeSeries)
+  private void writeDataAsText(JsonTimeSeries timeSeries)
     throws IOException
   {
     assert timeSeries != null : "timeSeries cannot be null";
@@ -625,7 +625,7 @@ public final class TimeSeriesWriter
    * @param timSeries     Time series to data of. Non-null.
    * @throws IOException  If the write operation fails for some reason.
    */
-  private void writeData(TimeSeries timeSeries)
+  private void writeData(JsonTimeSeries timeSeries)
     throws IOException
   {
     String dataUri = timeSeries.getDataUri();
@@ -672,7 +672,7 @@ public final class TimeSeriesWriter
    * @throws IllegalArgumentException  If timeSeries is null.
    * @throws IOException               If the write operation fails for some reason.
    */
-  public void write(TimeSeries timeSeries)
+  public void write(JsonTimeSeries timeSeries)
     throws IOException
   {
     if (timeSeries == null)
@@ -844,7 +844,7 @@ public final class TimeSeriesWriter
    * @throws IllegalStateException     If the writer is not open for writing.
    * @throws IOException  If the write operation fails for some reason.
    */
-  public void append(TimeSeries timeSeries)
+  public void append(JsonTimeSeries timeSeries)
     throws IOException
   {
     if (timeSeries == null)
@@ -910,7 +910,7 @@ public final class TimeSeriesWriter
    * @return                The requested string. Never null.
    * @throws IllegalArgumentException  If timeSeriesList is null or indentation is out of bounds.
    */
-  public static String toString(List<TimeSeries> timeSeriesList, boolean isPretty, int indentation)
+  public static String toString(List<JsonTimeSeries> timeSeriesList, boolean isPretty, int indentation)
   {
     if (timeSeriesList == null)
       throw new IllegalArgumentException("timeSeriesList cannot be null");
@@ -919,12 +919,12 @@ public final class TimeSeriesWriter
       throw new IllegalArgumentException("invalid indentation: " + indentation);
 
     ByteArrayOutputStream stringStream = new ByteArrayOutputStream();
-    TimeSeriesWriter writer = new TimeSeriesWriter(stringStream, isPretty, indentation);
+    JsonTimeSeriesWriter writer = new JsonTimeSeriesWriter(stringStream, isPretty, indentation);
 
     String string = "";
 
     try {
-      for (TimeSeries timeSeries : timeSeriesList) {
+      for (JsonTimeSeries timeSeries : timeSeriesList) {
 
         // Temporarily hide the dataUri property or the data will be written
         // to binary file
@@ -973,7 +973,7 @@ public final class TimeSeriesWriter
    * @return             The requested string. Never null.
    * @throws IllegalArgumentException  If timeSeries is null or indentation is out of bounds.
    */
-  public static String toString(TimeSeries timeSeries, boolean isPretty, int indentation)
+  public static String toString(JsonTimeSeries timeSeries, boolean isPretty, int indentation)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");
@@ -981,7 +981,7 @@ public final class TimeSeriesWriter
     if (indentation < 0)
       throw new IllegalArgumentException("invalid indentation: " + indentation);
 
-    List<TimeSeries> timeSeriesList = new ArrayList<>();
+    List<JsonTimeSeries> timeSeriesList = new ArrayList<>();
     timeSeriesList.add(timeSeries);
 
     return toString(timeSeriesList, isPretty, indentation);
@@ -999,7 +999,7 @@ public final class TimeSeriesWriter
    * @return            The requested string. Never null.
    * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public static String toString(TimeSeries timeSeries)
+  public static String toString(JsonTimeSeries timeSeries)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");

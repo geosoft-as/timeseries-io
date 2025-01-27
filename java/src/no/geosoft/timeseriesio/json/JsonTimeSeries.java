@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -17,9 +17,10 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
-import no.geosoft.timeseries.util.Formatter;
-import no.geosoft.timeseries.util.JsonUtil;
-import no.geosoft.timeseries.util.Util;
+import no.geosoft.timeseriesio.util.Formatter;
+import no.geosoft.timeseriesio.util.JsonUtil;
+import no.geosoft.timeseriesio.util.Statistics;
+import no.geosoft.timeseriesio.util.Util;
 
 /**
  * Class representing the content of one TimeSeries.JSON entry.
@@ -27,7 +28,7 @@ import no.geosoft.timeseries.util.Util;
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class TimeSeries
+public final class JsonTimeSeries
 {
   /**
    * The time series header data as a single JSON object.
@@ -49,7 +50,7 @@ public final class TimeSeries
    *
    * @param hasSignalData  Indicate if the time series includes signal data.
    */
-  TimeSeries(boolean hasSignalData)
+  JsonTimeSeries(boolean hasSignalData)
   {
     hasSignalData_ = hasSignalData;
   }
@@ -57,7 +58,7 @@ public final class TimeSeries
   /**
    * Create an empty time series instance.
    */
-  public TimeSeries()
+  public JsonTimeSeries()
   {
     this(true); // It has all the signal data that exists (none)
 
@@ -72,7 +73,7 @@ public final class TimeSeries
    * @param includeSignalValues  True to include signal values in the copy, false if not.
    * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public TimeSeries(TimeSeries timeSeries, boolean includeSignalValues)
+  public JsonTimeSeries(JsonTimeSeries timeSeries, boolean includeSignalValues)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");
@@ -1005,7 +1006,7 @@ public final class TimeSeries
   @Override
   public String toString()
   {
-    return TimeSeriesWriter.toString(this);
+    return JsonTimeSeriesWriter.toString(this);
   }
 
   /**
@@ -1018,7 +1019,7 @@ public final class TimeSeries
     Date date = new Date();
     long time = date.getTime();
 
-    TimeSeries t = new TimeSeries();
+    JsonTimeSeries t = new JsonTimeSeries();
     Signal s1 = new Signal("time", null, "datetime", null, Date.class, 1);
     t.addSignal(s1);
 

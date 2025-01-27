@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 /**
  * List the well known properties of the TimeSeries.JSON format.

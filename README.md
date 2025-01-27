@@ -242,7 +242,8 @@ Schema for the TimeSeriers.JSON is available [here](schemas/TimeSeries.json).
 
 ## Repository content
 
-In addition to the detailed format description given here, the present repository contains tools for varioos computing environments
+In addition to the detailed format description given here, the present repository contains tools for accessing
+TimeSeries.JSON files in various computing environments:
 
 * [java](java/README.md) - Access library in Java
 * [csharp][csharp/README.md] - Access library for .Net

@@ -1,4 +1,4 @@
-package no.geosoft.timeseries.util;
+package no.geosoft.timeseriesio.util;
 
 /**
  * Class for holding a space indentation commonly used at beginning

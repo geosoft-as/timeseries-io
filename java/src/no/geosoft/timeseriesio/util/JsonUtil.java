@@ -1,4 +1,4 @@
-package no.geosoft.timeseries.util;
+package no.geosoft.timeseriesio.util;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -16,7 +16,7 @@ import javax.json.JsonValue;
 import javax.json.stream.JsonParser;
 
 /**
- * A collection of utilities for the Log I/O JSON module.
+ * A collection of utilities for working with Json data.
  *
  * @author <a href="mailto:info@petroware.no">Petroware AS</a>
  */

@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.util.Date;
 

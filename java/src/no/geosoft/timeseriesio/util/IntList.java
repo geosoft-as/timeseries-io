@@ -1,4 +1,4 @@
-package no.geosoft.timeseries.util;
+package no.geosoft.timeseriesio.util;
 
 import java.util.Arrays;
 import java.util.Collection;

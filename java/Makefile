@@ -1,8 +1,9 @@
 ProjectDisplayName = TimeSeries.JSON
 
 JavaPackages = \
-        no/geosoft/timeseries \
-        no/geosoft/timeseries/util \
+        no/geosoft/timeseriesio/gpx \
+        no/geosoft/timeseriesio/json \
+        no/geosoft/timeseriesio/util \
 
 JavaLibraries = \
 	javax.json-1.1.3.jar \

@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.util;
 
 import no.geosoft.timeseries.util.RunningPercentile;
 

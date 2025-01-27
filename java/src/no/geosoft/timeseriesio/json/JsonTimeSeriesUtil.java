@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -6,19 +6,19 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import no.geosoft.timeseries.util.Util;
+import no.geosoft.timeseriesio.util.Util;
 
 /**
  * Utility methods for working with time series.
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class TimeSeriesUtil
+public final class JsonTimeSeriesUtil
 {
   /**
    * Private constructor to prevent client instantiation.
    */
-  private TimeSeriesUtil()
+  private JsonTimeSeriesUtil()
   {
     assert false : "This constructor should never be called";
   }
@@ -32,7 +32,7 @@ public final class TimeSeriesUtil
    * @return            The requested line length. [0,&gt;.
    * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public static int getLineLength(TimeSeries timeSeries)
+  public static int getLineLength(JsonTimeSeries timeSeries)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");
@@ -58,7 +58,7 @@ public final class TimeSeriesUtil
    * @param timeSeries  Time series to create logging friendly string for. Non-null.
    * @return            The requested string. Never null.
    */
-  public static String toLoggingString(TimeSeries timeSeries)
+  public static String toLoggingString(JsonTimeSeries timeSeries)
   {
     int nSignals = timeSeries.getNSignals();
     int nValues = timeSeries.getNValues();
@@ -110,7 +110,7 @@ public final class TimeSeriesUtil
    * @return                   Actual name of the curve added. Never null.
    * @throws IllegalArgumentException  If timeSeries or curveName is null.
    */
-  public static String addLatencySignal(TimeSeries timeSeries, String signalName,
+  public static String addLatencySignal(JsonTimeSeries timeSeries, String signalName,
                                         String signalDescription,
                                         boolean isTotalLatency)
   {

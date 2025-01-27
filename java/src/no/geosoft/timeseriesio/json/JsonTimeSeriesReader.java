@@ -1,4 +1,4 @@
-package no.geosoft.timeseries;
+package no.geosoft.timeseriesio.json;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -24,9 +24,9 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.stream.JsonParser;
 
-import no.geosoft.timeseries.util.ISO8601DateParser;
-import no.geosoft.timeseries.util.JsonUtil;
-import no.geosoft.timeseries.util.Util;
+import no.geosoft.timeseriesio.util.ISO8601DateParser;
+import no.geosoft.timeseriesio.util.JsonUtil;
+import no.geosoft.timeseriesio.util.Util;
 
 /**
  * Class for reading TimeSeries.JSON files.
@@ -34,7 +34,7 @@ import no.geosoft.timeseries.util.Util;
  * Typical usage:
  * <blockquote>
  *   <pre>
- *   TimeSerierReader reader = new TimeSeriesReader(new File("path/to/file.json"));
+ *   JsonTimeSerierReader reader = new JsonTimeSeriesReader(new File("path/to/file.json"));
  *   List&lt;TimeSeries&gt; timeSeries = reader.read(true, true, null);
  *   </pre>
  * </blockquote>
@@ -44,7 +44,7 @@ import no.geosoft.timeseries.util.Util;
  *
  * <blockquote>
  *   <pre>
- *   TimeSeriesReader reader = new TimeSeriesReader(new File("path/to/file.json"));
+ *   JsonTimeSeriesReader reader = new JsonTimeSeriesReader(new File("path/to/file.json"));
  *   List&lt;TimeSeries&gt; timeSeries = reader.read(false, false, null);
  *   :
  *   reader.readData(timeSeries);
@@ -62,10 +62,10 @@ import no.geosoft.timeseries.util.Util;
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class TimeSeriesReader
+public final class JsonTimeSeriesReader
 {
   /** The logger instance. */
-  private static final Logger logger_ = Logger.getLogger(TimeSeriesReader.class.getName());
+  private static final Logger logger_ = Logger.getLogger(JsonTimeSeriesReader.class.getName());
 
   /** The file to read. Null if reading from stream or JSON array. */
   private final File file_;
@@ -85,7 +85,7 @@ public final class TimeSeriesReader
    * @param inputStream  Stream to read. Non-null.
    * @throws IllegalArgumentException  If inputStream is null.
    */
-  public TimeSeriesReader(InputStream inputStream)
+  public JsonTimeSeriesReader(InputStream inputStream)
   {
     if (inputStream == null)
       throw new IllegalArgumentException("inputStream cannot be null");
@@ -101,7 +101,7 @@ public final class TimeSeriesReader
    * @param file  Disk file to read. Non-null.
    * @throws IllegalArgumentException  If file is null.
    */
-  public TimeSeriesReader(File file)
+  public JsonTimeSeriesReader(File file)
   {
     if (file == null)
       throw new IllegalArgumentException("file cannot be null");
@@ -117,7 +117,7 @@ public final class TimeSeriesReader
    * @param text  Text to read. Non-null.
    * @throws IllegalArgumentException  If text is null.
    */
-  public TimeSeriesReader(String text)
+  public JsonTimeSeriesReader(String text)
   {
     if (text == null)
       throw new IllegalArgumentException("text cannot be null");
@@ -136,7 +136,7 @@ public final class TimeSeriesReader
    * @param jsonArray  Array constituting the tim series. Non-null.
    * @throws IllegalArgumentException  If jsonArray is null.
    */
-  public TimeSeriesReader(JsonArray jsonArray)
+  public JsonTimeSeriesReader(JsonArray jsonArray)
   {
     if (jsonArray == null)
       throw new IllegalArgumentException("jsonArray cannot be null");
@@ -257,10 +257,10 @@ public final class TimeSeriesReader
    * @param shouldCaptureStatistics  True to create statistics from the bulk data,
    * @param dataListener             Listener that will be notified when new data has read.
    */
-  private void readBinaryData(TimeSeries timeSeries,
+  private void readBinaryData(JsonTimeSeries timeSeries,
                               File binaryFile,
                               boolean shouldCaptureStatistics,
-                              TimeSeriesDataListener dataListener)
+                              JsonTimeSeriesDataListener dataListener)
     throws InterruptedException, IOException
   {
     DataInputStream inputStream = null;
@@ -365,10 +365,10 @@ public final class TimeSeriesReader
    * @throws InterruptedException    If the read operation was interrupted by the client
    *                                 through the data listener.
    */
-  private void readData(JsonParser jsonParser, TimeSeries timeSeries,
+  private void readData(JsonParser jsonParser, JsonTimeSeries timeSeries,
                         boolean shouldReadBulkData,
                         boolean shouldCaptureStatistics,
-                        TimeSeriesDataListener dataListener)
+                        JsonTimeSeriesDataListener dataListener)
     throws InterruptedException
   {
     assert jsonParser != null : "jsonParser cannot be null";
@@ -589,7 +589,7 @@ public final class TimeSeriesReader
    * @param jsonParser  The JSON parser. Non-null.
    * @param timeSeries  The time series to populate. Non-null.
    */
-  private static void readSignalDefinitions(JsonParser jsonParser, TimeSeries timeSeries)
+  private static void readSignalDefinitions(JsonParser jsonParser, JsonTimeSeries timeSeries)
   {
     assert jsonParser != null : "jsonParser cannot be null";
     assert timeSeries != null : "timeSeries cannot be null";
@@ -623,13 +623,13 @@ public final class TimeSeriesReader
    * @throws InterruptedException  If the client returns <tt>false</tt> from
    *                             the {@link JsonDataListener#dataRead} method.
    */
-  private TimeSeries readTimeSeries(JsonParser jsonParser,
-                                    boolean shouldReadBulkData,
-                                    boolean shouldCaptureStatistics,
-                                    TimeSeriesDataListener dataListener)
+  private JsonTimeSeries readTimeSeries(JsonParser jsonParser,
+                                        boolean shouldReadBulkData,
+                                        boolean shouldCaptureStatistics,
+                                        JsonTimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
-    TimeSeries timeSeries = new TimeSeries();
+    JsonTimeSeries timeSeries = new JsonTimeSeries();
 
     while (jsonParser.hasNext()) {
       JsonParser.Event parseEvent = jsonParser.next();
@@ -716,7 +716,7 @@ public final class TimeSeriesReader
    *
    * <pre>
    *   // Read meta data
-   *   List&lt;TimeSeries&gt; timeSeriesList = reader.read(false, ...);
+   *   List&lt;JsonTimeSeries&gt; timeSeriesList = reader.read(false, ...);
    *
    *   // Read the curve data
    *   reader.readData(timeSeriesList);
@@ -728,7 +728,7 @@ public final class TimeSeriesReader
    *
    * <pre>
    *   // Read metadata
-   *   List&lt;TimeSeries&gt; timeSeriesList = reader.read(false, ...);
+   *   List&lt;JsonTimeSeries&gt; timeSeriesList = reader.read(false, ...);
    *
    *   // Read all the data
    *   timeSeriesList = reader.read(true, ...);
@@ -746,18 +746,18 @@ public final class TimeSeriesReader
    * @throws IllegalArgumentException  If logs is null.
    * @throws IOException  If the read operation fails for some reason.
    * @throws InterruptedException  If the client returns <code>false</code> from
-   *                      the {@link TimeSeriesDataListener#dataRead} method.
+   *                      the {@link JsonTimeSeriesDataListener#dataRead} method.
    */
-  public void readData(List<TimeSeries> timeSeriesList,
+  public void readData(List<JsonTimeSeries> timeSeriesList,
                        boolean shouldCaptureStatistics,
-                       TimeSeriesDataListener dataListener)
+                       JsonTimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
     if (timeSeriesList == null)
       throw new IllegalArgumentException("timeSeriesList cannot be null");
 
     // Read everything into a new structure
-    List<TimeSeries> newTimeSeriesList = read(true, shouldCaptureStatistics, dataListener);
+    List<JsonTimeSeries> newTimeSeriesList = read(true, shouldCaptureStatistics, dataListener);
 
     // This is just a simple brain damage check. The client has all possible
     // ways to get into trouble if calling this method with an arbitrary argument.
@@ -766,8 +766,8 @@ public final class TimeSeriesReader
 
     // Move the log data from the new to the existing
     for (int i = 0; i < timeSeriesList.size(); i++) {
-      TimeSeries existingTimeSeries = timeSeriesList.get(i);
-      TimeSeries newTimeSeries = newTimeSeriesList.get(i);
+      JsonTimeSeries existingTimeSeries = timeSeriesList.get(i);
+      JsonTimeSeries newTimeSeries = newTimeSeriesList.get(i);
 
       existingTimeSeries.setSignals(newTimeSeries.getSignals());
     }
@@ -784,14 +784,14 @@ public final class TimeSeriesReader
    * @return                    The logs of the JSON stream. Never null.
    * @throws IOException        If the read operation fails for some reason.
    * @throws InterruptedException  If the client returns <code>false</code> from
-   *                            the {@link TimeSeriesDataListener#dataRead} method.
+   *                            the {@link JsonTimeSeriesDataListener#dataRead} method.
    */
-  public List<TimeSeries> read(boolean shouldReadBulkData,
-                               boolean shouldCaptureStatistics,
-                               TimeSeriesDataListener dataListener)
+  public List<JsonTimeSeries> read(boolean shouldReadBulkData,
+                                   boolean shouldCaptureStatistics,
+                                   JsonTimeSeriesDataListener dataListener)
     throws IOException, InterruptedException
   {
-    List<TimeSeries> timeSeriesList = new ArrayList<>();
+    List<JsonTimeSeries> timeSeriesList = new ArrayList<>();
 
     InputStream inputStream = null;
 
@@ -807,10 +807,10 @@ public final class TimeSeriesReader
           return timeSeriesList;
 
         if (parseEvent == JsonParser.Event.START_OBJECT) {
-          TimeSeries timeSeries = readTimeSeries(jsonParser,
-                                                 shouldReadBulkData,
-                                                 shouldCaptureStatistics,
-                                                 dataListener);
+          JsonTimeSeries timeSeries = readTimeSeries(jsonParser,
+                                                     shouldReadBulkData,
+                                                     shouldCaptureStatistics,
+                                                     dataListener);
           timeSeriesList.add(timeSeries);
         }
       }
@@ -842,7 +842,7 @@ public final class TimeSeriesReader
    * @return  The time series of the stream. Never null.
    * @throws IOException  If the read operation fails for some reason.
    */
-  public List<TimeSeries> read()
+  public List<JsonTimeSeries> read()
     throws IOException
   {
     try {
@@ -862,10 +862,10 @@ public final class TimeSeriesReader
    * @return  The first time series of the stream. Null if there is none.
    * @throws IOException  If the read operation fails for some reason.
    */
-  public TimeSeries readOne()
+  public JsonTimeSeries readOne()
     throws IOException
   {
-    List<TimeSeries> timeSeriesList = read();
+    List<JsonTimeSeries> timeSeriesList = read();
     return !timeSeriesList.isEmpty() ? timeSeriesList.get(0) : null;
   }
 
@@ -919,7 +919,7 @@ public final class TimeSeriesReader
      * @param shouldCaptureStatistics  True if statistics should be captured,
      *                                 false otherwise.
      */
-    void move(TimeSeries timeSeries, boolean shouldCaptureStatistics)
+    void move(JsonTimeSeries timeSeries, boolean shouldCaptureStatistics)
     {
       assert timeSeries != null : "timeSeries cannot be null";
 
@@ -953,8 +953,8 @@ public final class TimeSeriesReader
       File file1 = new File("C:/Users/jacob/logdata/timeseries/test.json");
       File file2 = new File("C:/Users/jacob/logdata/timeseries/test2.json");
 
-      TimeSeriesReader reader = new TimeSeriesReader(file1);
-      TimeSeries timeSeries = reader.readOne();
+      JsonTimeSeriesReader reader = new JsonTimeSeriesReader(file1);
+      JsonTimeSeries timeSeries = reader.readOne();
 
       timeSeries.setDataUri("test.bin");
 
@@ -967,11 +967,11 @@ public final class TimeSeriesReader
       Signal e = timeSeries.findSignal("Error code");
       e.setValue(1, "This is a test");
 
-      TimeSeriesWriter writer = new TimeSeriesWriter(file2);
+      JsonTimeSeriesWriter writer = new JsonTimeSeriesWriter(file2);
       writer.write(timeSeries);
       writer.close();
 
-      reader = new TimeSeriesReader(file2);
+      reader = new JsonTimeSeriesReader(file2);
       timeSeries = reader.readOne();
 
       System.out.println(timeSeries);

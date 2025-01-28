@@ -9,16 +9,16 @@ import java.util.regex.Pattern;
 import no.geosoft.timeseriesio.util.Util;
 
 /**
- * Utility methods for working with time series.
+ * Utility methods for working with TimeSeries.JSON data.
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class JsonTimeSeriesUtil
+public final class TimeSeriesJsonUtil
 {
   /**
    * Private constructor to prevent client instantiation.
    */
-  private JsonTimeSeriesUtil()
+  private TimeSeriesJsonUtil()
   {
     assert false : "This constructor should never be called";
   }
@@ -32,7 +32,7 @@ public final class JsonTimeSeriesUtil
    * @return            The requested line length. [0,&gt;.
    * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public static int getLineLength(JsonTimeSeries timeSeries)
+  public static int getLineLength(TimeSeriesJson timeSeries)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");
@@ -58,7 +58,7 @@ public final class JsonTimeSeriesUtil
    * @param timeSeries  Time series to create logging friendly string for. Non-null.
    * @return            The requested string. Never null.
    */
-  public static String toLoggingString(JsonTimeSeries timeSeries)
+  public static String toLoggingString(TimeSeriesJson timeSeries)
   {
     int nSignals = timeSeries.getNSignals();
     int nValues = timeSeries.getNValues();
@@ -110,7 +110,7 @@ public final class JsonTimeSeriesUtil
    * @return                   Actual name of the curve added. Never null.
    * @throws IllegalArgumentException  If timeSeries or curveName is null.
    */
-  public static String addLatencySignal(JsonTimeSeries timeSeries, String signalName,
+  public static String addLatencySignal(TimeSeriesJson timeSeries, String signalName,
                                         String signalDescription,
                                         boolean isTotalLatency)
   {

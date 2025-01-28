@@ -212,7 +212,7 @@ public final class Signal
    * @throws IllegalStateException  If the method is being called for other than
    *                                string signals.
    */
-  void setSize(int size)
+  public void setSize(int size)
   {
     if (size < 0)
       throw new IllegalArgumentException("Invalid size: " + size);

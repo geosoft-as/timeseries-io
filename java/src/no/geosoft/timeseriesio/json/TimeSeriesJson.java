@@ -24,11 +24,11 @@ import no.geosoft.timeseriesio.util.Util;
 
 /**
  * Class representing the content of one TimeSeries.JSON entry.
- * A TimeSeries consists of a header, signal definitions, and signal data.
+ * A TimeSeriesJson consists of a header, signal definitions, and signal data.
  *
  * @author <a href="mailto:jacob.dreyer@geosoft.no">Jacob Dreyer</a>
  */
-public final class JsonTimeSeries
+public final class TimeSeriesJson
 {
   /**
    * The time series header data as a single JSON object.
@@ -50,7 +50,7 @@ public final class JsonTimeSeries
    *
    * @param hasSignalData  Indicate if the time series includes signal data.
    */
-  JsonTimeSeries(boolean hasSignalData)
+  TimeSeriesJson(boolean hasSignalData)
   {
     hasSignalData_ = hasSignalData;
   }
@@ -58,7 +58,7 @@ public final class JsonTimeSeries
   /**
    * Create an empty time series instance.
    */
-  public JsonTimeSeries()
+  public TimeSeriesJson()
   {
     this(true); // It has all the signal data that exists (none)
 
@@ -73,7 +73,7 @@ public final class JsonTimeSeries
    * @param includeSignalValues  True to include signal values in the copy, false if not.
    * @throws IllegalArgumentException  If timeSeries is null.
    */
-  public JsonTimeSeries(JsonTimeSeries timeSeries, boolean includeSignalValues)
+  public TimeSeriesJson(TimeSeriesJson timeSeries, boolean includeSignalValues)
   {
     if (timeSeries == null)
       throw new IllegalArgumentException("timeSeries cannot be null");
@@ -1006,7 +1006,7 @@ public final class JsonTimeSeries
   @Override
   public String toString()
   {
-    return JsonTimeSeriesWriter.toString(this);
+    return TimeSeriesJsonWriter.toString(this);
   }
 
   /**
@@ -1019,7 +1019,7 @@ public final class JsonTimeSeries
     Date date = new Date();
     long time = date.getTime();
 
-    JsonTimeSeries t = new JsonTimeSeries();
+    TimeSeriesJson t = new TimeSeriesJson();
     Signal s1 = new Signal("time", null, "datetime", null, Date.class, 1);
     t.addSignal(s1);
 

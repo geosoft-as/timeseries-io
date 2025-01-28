@@ -1,5 +1,5 @@
 C01: *************************************************************************
-C02: * GeoSoft (C) 2024 - GeoSoft License Manager (GLM)
+C02: * GeoSoft (C) 2025 - Time Series I/O
 C03: *
 C04: * Note the peculiar syntax:
 C05: * o No empty lines allowed
@@ -16,10 +16,10 @@ C15: *   - "lib/"-prefix must not be present to run with "java -jar"
 C16: *
 C17: *************************************************************************
 Manifest-Version:      1.0
-Specification-Title:   JTimeSeries
+Specification-Title:   TimeSeries I/O
 Specification-Vendor:  GeoSoft
 Specification-Vision:  Simplicity is the ultimate sophistication
-Implementation-Title:  GeoSoft JTimeSeries
+Implementation-Title:  GeoSoft TimeSeries I/O
 Implementation-Vendor: GeoSoft
 Built-By:              jacob
 GnuMake-Version:       4.2.1

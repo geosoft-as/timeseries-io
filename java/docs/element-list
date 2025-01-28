@@ -1,2 +1,3 @@
-no.geosoft.timeseries
-no.geosoft.timeseries.util
+no.geosoft.timeseriesio.gpx
+no.geosoft.timeseriesio.json
+no.geosoft.timeseriesio.util

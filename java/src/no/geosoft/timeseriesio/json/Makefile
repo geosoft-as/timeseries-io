@@ -1,13 +1,13 @@
 Source = \
-	JsonTimeSeries.java \
-	JsonTimeSeriesDataListener.java \
-	JsonTimeSeriesReader.java \
-	JsonTimeSeriesUtil.java \
-	JsonTimeSeriesWriter.java \
 	Signal.java \
+	TimeSeriesJson.java \
+	TimeSeriesJsonDataListener.java \
+	TimeSeriesJsonReader.java \
+	TimeSeriesJsonUtil.java \
+	TimeSeriesJsonWriter.java \
 	ValueType.java \
 	WellKnownProperty.java \
 
-Main = Signal
+Main = TimeSeriesJson
 
 include $(DEV_HOME)/timeseries-io/java/Makefile

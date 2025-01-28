@@ -20,6 +20,11 @@ public final class Track
     name_ = name;
   }
 
+  public String getName()
+  {
+    return name_;
+  }
+
   public void addTrackPoint(TrackPoint trackPoint)
   {
     trackPoints_.add(trackPoint);

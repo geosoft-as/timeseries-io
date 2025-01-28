@@ -1,4 +1,4 @@
-ProjectDisplayName = TimeSeries.JSON
+ProjectDisplayName = TimeSeries I/O
 
 JavaPackages = \
         no/geosoft/timeseriesio/gpx \

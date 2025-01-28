@@ -11,10 +11,10 @@ package no.geosoft.timeseriesio.json;
  *
  * <blockquote>
  *   <pre>
- *   class DataListener implements JsonTimeSeriesDataListener
+ *   class DataListener implements TimeSeriesJsonDataListener
  *   {
  *     &#64;Override
- *     public void dataRead(JsonTimeSeries timeSeries)
+ *     public void dataRead(TimeSeriesJson timeSeries)
  *     {
  *       // Process time series data
  *       :
@@ -31,14 +31,14 @@ package no.geosoft.timeseriesio.json;
  *
  * @author <a href="mailto:info@petroware.no">Petroware AS</a>
  */
-public interface JsonTimeSeriesDataListener
+public interface TimeSeriesJsonDataListener
 {
   /**
-   * A notification from {@link JsonTimeSeriesReader} indicating that a new
+   * A notification from {@link TimeSeriesJsonReader} indicating that a new
    * portion of data has been read into the specified TimeSeries instance.
    *
    * After the client has processed the data, it may clean the signal data
-   * in order to save memory storage. See {@link JsonTimeSeries#clearSignals}.
+   * in order to save memory storage. See {@link TimeSeriesJson#clearSignals}.
    *
    * It is also possible for the client to <em>abort</em> the reading
    * process at this point, by returning <code>false</code> from the method.
@@ -50,5 +50,5 @@ public interface JsonTimeSeriesDataListener
    * @param timeSeries  Time series that has been populated with new data. Never null.
    * @return            True to continue reading, false to abort the process.
    */
-  public boolean dataRead(JsonTimeSeries timeSeries);
+  public boolean dataRead(TimeSeriesJson timeSeries);
 }

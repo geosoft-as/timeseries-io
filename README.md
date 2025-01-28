@@ -198,7 +198,7 @@ transmission between computers only.
 
 For measurements that may possibly be viewed by humans the pretty format should always be used.
 This format should contain whitespace and indentation that emphasizes the logical structure of the content.
-For the data section in particular, arrays of curve data for each index must be
+For the data section in particular, arrays of signal data for each index must be
 written _horizontally_ and with commas between entries _aligned_:
 
 ```json

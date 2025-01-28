@@ -469,7 +469,7 @@ public final class Signal
     Signal s2 = new Signal("test2", null, null, null, Double.class, 1);
     s2.addValue(100.0);
 
-    JsonTimeSeries t = new JsonTimeSeries();
+    TimeSeriesJson t = new TimeSeriesJson();
     t.addSignal(s1);
     t.addSignal(s2);
 

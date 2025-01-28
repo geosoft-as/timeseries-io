@@ -1,7 +1,7 @@
 Source = \
 	Gpx.java \
-	Track.java \
-	TrackPoint.java \
+	GpxTrack.java \
+	GpxTrackPoint.java \
 	GpxReader.java \
 	GpxWriter.java \
 

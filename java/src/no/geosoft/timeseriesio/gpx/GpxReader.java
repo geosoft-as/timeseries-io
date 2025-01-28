@@ -196,7 +196,7 @@ public final class GpxReader
       List<Element> trackElements = XmlUtil.findChildren(root, "trk");
       for (Element trackElement : trackElements) {
         String name = XmlUtil.getChildValue(trackElement, "name", (String) null);
-        Track track = new Track(name);
+        GpxTrack track = new GpxTrack(name);
 
         int index = 0;
 
@@ -210,7 +210,7 @@ public final class GpxReader
             Double elevation = XmlUtil.getChildValue(trackPointElement, "ele", (Double) null);
             Date time = XmlUtil.getChildValue(trackPointElement, "time", (Date) null);
 
-            TrackPoint trackPoint = new TrackPoint(time, latitude, longitude, elevation);
+            GpxTrackPoint trackPoint = new GpxTrackPoint(time, latitude, longitude, elevation);
 
             //
             // Extensions (like Garmin etc.)

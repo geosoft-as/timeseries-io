@@ -198,6 +198,9 @@ public final class GpxReader
         String name = XmlUtil.getChildValue(trackElement, "name", (String) null);
         GpxTrack track = new GpxTrack(name);
 
+        String type = XmlUtil.getChildValue(trackElement, "type", (String) null);
+        track.setType(type);
+
         int index = 0;
 
         List<Element> trackSegmentElements = XmlUtil.findChildren(trackElement, "trkseg");

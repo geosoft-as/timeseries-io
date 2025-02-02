@@ -1,7 +1,7 @@
 package no.geosoft.timeseriesio.gpx;
 
-import java.util.Set;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 
 /**
@@ -12,7 +12,7 @@ import java.util.Collections;
 public final class Gpx
 {
   /** The tracks of this GPX instance. */
-  private final Set<GpxTrack> tracks_ = new HashSet<>();
+  private final List<GpxTrack> tracks_ = new ArrayList<>();
 
   /**
    * Create a new empty GPX instance.
@@ -40,9 +40,9 @@ public final class Gpx
    *
    * @return  The tracks of this GPX instance. Never null.
    */
-  public Set<GpxTrack> getTracks()
+  public List<GpxTrack> getTracks()
   {
-    return Collections.unmodifiableSet(tracks_);
+    return Collections.unmodifiableList(tracks_);
   }
 
   /** {@inheritDoc} */

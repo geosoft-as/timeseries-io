@@ -14,6 +14,9 @@ public final class GpxTrack
   /** Name of this track. */
   private final String name_;
 
+  /** Track type, such as "hiking". */
+  private String type_;
+
   /** The points that makes up the track. */
   private final List<GpxTrackPoint> trackPoints_ = new ArrayList<>();
 
@@ -35,6 +38,26 @@ public final class GpxTrack
   public String getName()
   {
     return name_;
+  }
+
+  /**
+   * Return type of this track.
+   *
+   * @return  Type of this track. May be null if none provided.
+   */
+  public String getType()
+  {
+    return type_;
+  }
+
+  /**
+   * Set type of this track.
+   *
+   * @param type  Track type. May be null.
+   */
+  public void setType(String type)
+  {
+    type_ = type;
   }
 
   /**

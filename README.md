@@ -26,7 +26,7 @@ and big data analytics.
 [
   {
     "header": {
-      "TimeSeries.JSON", "1.0",
+      "TimeSeries.JSON": "1.0",
       "name": "New York City Marathon",
       "description": "R. Chepngetich",
       "source": "Garmin Fenix 8",

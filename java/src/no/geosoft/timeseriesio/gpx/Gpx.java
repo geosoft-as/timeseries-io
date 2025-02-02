@@ -49,6 +49,9 @@ public final class Gpx
   @Override
   public String toString()
   {
-    return "GPX";
+    StringBuilder s = new StringBuilder();
+    for (GpxTrack track : tracks_)
+      s.append(track.toString());
+    return s.toString();
   }
 }

@@ -5,6 +5,6 @@ Source = \
 	GpxReader.java \
 	GpxWriter.java \
 
-Main = Gpx
+Main = GpxReader
 
 include $(DEV_HOME)/timeseries-io/java/Makefile

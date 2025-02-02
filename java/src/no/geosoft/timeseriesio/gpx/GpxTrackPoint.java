@@ -1,5 +1,7 @@
 package no.geosoft.timeseriesio.gpx;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -133,13 +135,17 @@ public final class GpxTrackPoint
   @Override
   public String toString()
   {
-    StringBuilder s = new StringBuilder();
-    s.append("GPX TrackPoint\n");
-    s.append("  Time........: " + time_ + "\n");
-    s.append("  Position....: " + latitude_ + "," + longitude_ + "\n");
-    s.append("  Elevation...: " + elevation_ + "\n");
-    s.append("  Heart rate..: " + heartRate_ + "\n");
-    s.append("  Cadence.....: " + cadence_ + "\n");
-    return s.toString();
+    DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
+    return dateFormat.format(time_) + " " +
+      "pos=" +
+      String.format("%8.5f", latitude_) + "," +
+      String.format("%8.5f", longitude_) + " " +
+      "z=" +
+      String.format("%5.0f", elevation_) + " " +
+      "hr=" +
+      String.format("%4.0f", heartRate_) + " " +
+      "cad=" +
+      String.format("%3.0f", cadence_);
   }
 }

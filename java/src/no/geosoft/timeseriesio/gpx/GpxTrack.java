@@ -60,4 +60,19 @@ public final class GpxTrack
   {
     return Collections.unmodifiableList(trackPoints_);
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public String toString()
+  {
+    StringBuilder s = new StringBuilder();
+
+    String name = name_ != null ? name_ : "<NONAME>";
+    s.append("Track: " + name + "\n");
+
+    for (GpxTrackPoint point : trackPoints_)
+      s.append(point.toString() + "\n");
+
+    return s.toString();
+  }
 }

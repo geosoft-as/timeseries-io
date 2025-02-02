@@ -236,6 +236,8 @@ public final class GpxReader
             track.addTrackPoint(trackPoint);
           }
         }
+
+        gpx.addTrack(track);
       }
     }
     catch (ParserConfigurationException exception) {
@@ -262,15 +264,21 @@ public final class GpxReader
   public static void main(String[] arguments)
   {
     try {
-      GpxReader gpxReader = new GpxReader(new File("C:/Users/jd/logdata/timeseries/Gramstad.gpx"));
+      String homeDir = System.getProperty("user.home");
+      GpxReader gpxReader = new GpxReader(new File(homeDir + "/logdata/timeseries/Lifjell.gpx"));
 
       Gpx gpx = gpxReader.read();
+
+
       System.out.println(gpx);
 
-      File file = new File("C:/Users/jd/logdata/timeseries/Gramstad.gpx");
-      GpxWriter writer = new GpxWriter(file);
+
+      /*
+      File file = new File("C:/Users/jd/logdata/timeseries/Lifjell.gpx");
+      no.geosoft.timeseriesio.json.TimeSeriesJsonWriter writer = new no.geosoft.timeseriesio.json.TimeSeriesJsonWriter(file);
       writer.write(gpx);
       writer.close();
+      */
     }
     catch (Exception exception) {
       exception.printStackTrace();

@@ -1,7 +1,5 @@
 package no.geosoft.timeseriesio.util;
 
-import no.geosoft.timeseries.util.RunningPercentile;
-
 /**
  * Class for computing running statistics on a data stream.
  * <p>
